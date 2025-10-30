@@ -174,50 +174,188 @@ public class ApiResponse<T> {
 
 - 접미사: **Request**
 - 요청 데이터 전달용
+- **record 사용 권장** (Java 16+)
 
 ```java
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class UserRequest {
-
+/**
+ * 사용자 요청 DTO
+ */
+public record UserRequest(
     @NotBlank(message = "이메일은 필수입니다.")
     @Email(message = "올바른 이메일 형식이 아닙니다.")
-    private String email;
+    String email,
 
     @NotBlank(message = "이름은 필수입니다.")
     @Size(min = 2, max = 20, message = "이름은 2자 이상 20자 이하여야 합니다.")
-    private String name;
+    String name
+) {
+    // Compact Constructor (선택 사항)
+    public UserRequest {
+        // 추가 검증 로직 가능
+        if (name != null && name.isBlank()) {
+            throw new IllegalArgumentException("이름은 공백일 수 없습니다.");
+        }
+    }
 }
 ```
+
+**record의 장점**:
+- 불변성 자동 보장 (모든 필드 final)
+- 보일러플레이트 제거 (생성자, getter, equals, hashCode, toString 자동 생성)
+- 코드 간결성 (약 50% 감소)
 
 ### 5.2 Response DTO
 
 - 접미사: **Response**
 - 응답 데이터 전달용
+- **record 사용 권장** (Java 16+)
 
 ```java
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class UserResponse {
-
-    private Long id;
-    private String email;
-    private String name;
-    private LocalDateTime createdAt;
-
+/**
+ * 사용자 응답 DTO
+ */
+public record UserResponse(
+    Long id,
+    String email,
+    String name,
+    LocalDateTime createdAt
+) {
+    /**
+     * Entity로부터 Response DTO 생성 (정적 팩토리 메서드)
+     */
     public static UserResponse from(User user) {
-        return UserResponse.builder()
-            .id(user.getId())
-            .email(user.getEmail())
-            .name(user.getName())
-            .createdAt(user.getCreatedAt())
-            .build();
+        return new UserResponse(
+            user.getId(),
+            user.getEmail(),
+            user.getName(),
+            user.getCreatedAt()
+        );
     }
 }
 ```
+
+**record 사용 시 주의사항**:
+- getter 메서드명: `record.fieldName()` 형태 (예: `response.email()`)
+- setter 없음: 불변 객체로 설계됨
+- 상속 불가: interface 구현은 가능
+- Jackson 자동 지원: Spring Boot 2.5+ (JSON 직렬화/역직렬화)
+
+### 5.3 record vs class 선택 기준
+
+**DTO의 역할과 복잡도에 따라 유연하게 선택**
+
+#### record 사용 (✅)
+
+**조건**:
+- 단순 조회 응답
+- 값이 변경되지 않음
+- 간단한 변환만 필요
+- 요청 데이터 (불변성 보장 필요)
+
+**예시**:
+```java
+// ✅ 단순 CRUD 응답
+public record UserResponse(
+    Long id,
+    String email,
+    String name
+) {
+    public static UserResponse from(User user) {
+        return new UserResponse(
+            user.getId(),
+            user.getEmail(),
+            user.getName()
+        );
+    }
+}
+
+// ✅ 요청 데이터 (검증 후 변경 불필요)
+public record UserRequest(
+    @NotBlank String email,
+    @NotBlank String password,
+    @NotBlank String name
+) {
+}
+
+// ✅ 페이지 정보
+public record PageInfo(int page, int size, long total) {
+}
+```
+
+#### class 사용 (✅)
+
+**조건**:
+- 서비스 로직에서 값 변경 필요
+- 복잡한 계산 로직 포함
+- 여러 단계를 거쳐 데이터 수집
+- 가변 상태 관리 필요
+
+**예시**:
+```java
+// ✅ 복잡한 통계 응답 (여러 단계 데이터 수집)
+@Getter
+@Builder
+public class UserStatisticsResponse {
+    private final Long userId;
+    private final String name;
+    private final int totalPosts;
+    private final int totalComments;
+    private final double activityScore;
+}
+
+// Service에서 사용
+public UserStatisticsResponse getUserStatistics(Long userId) {
+    User user = userRepository.findById(userId).orElseThrow();
+    
+    // 여러 단계를 거쳐 데이터 수집
+    int totalPosts = postRepository.countByUserId(userId);
+    int totalComments = commentRepository.countByUserId(userId);
+    double score = calculateActivityScore(totalPosts, totalComments);
+    
+    // Builder로 한 번에 생성
+    return UserStatisticsResponse.builder()
+        .userId(user.getId())
+        .name(user.getName())
+        .totalPosts(totalPosts)
+        .totalComments(totalComments)
+        .activityScore(score)
+        .build();
+}
+
+// ✅ 가변 상태가 필요한 경우
+@Getter
+public class ReportResponse {
+    private final String reportName;
+    private final LocalDateTime generatedAt;
+    
+    // 가변 필드
+    private List<String> errors = new ArrayList<>();
+    private boolean isCompleted = false;
+
+    public ReportResponse(String reportName) {
+        this.reportName = reportName;
+        this.generatedAt = LocalDateTime.now();
+    }
+
+    public void addError(String error) {
+        this.errors.add(error);
+    }
+
+    public void markCompleted() {
+        this.isCompleted = true;
+    }
+}
+```
+
+#### 결정 기준 요약
+
+| 상황 | 추천 | 이유 |
+|------|------|------|
+| 단순 조회 응답 | record ✅ | 불변성, 간결함 |
+| 요청 데이터 | record ✅ | 검증 후 변경 불필요 |
+| 값 변경 필요 | class ✅ | 가변 상태 관리 |
+| 복잡한 계산 | class ✅ | 생성자 로직 복잡 |
+| 여러 단계 수집 | class + Builder ✅ | 점진적 데이터 설정 |
 
 ## 6. API 버전 관리
 
@@ -267,21 +405,22 @@ public ResponseEntity<ApiResponse<Page<UserResponse>>> getUsers(
 ### 8.1 Validation 어노테이션 사용
 
 ```java
-@Getter
-@NoArgsConstructor
-public class UserRequest {
-
+/**
+ * 사용자 요청 DTO (record 사용)
+ */
+public record UserRequest(
     @NotBlank(message = "이메일은 필수입니다.")
     @Email(message = "올바른 이메일 형식이 아닙니다.")
-    private String email;
+    String email,
 
     @NotBlank(message = "이름은 필수입니다.")
-    @Size(min = 2, max = 20)
-    private String name;
+    @Size(min = 2, max = 20, message = "이름은 2자 이상 20자 이하여야 합니다.")
+    String name,
 
     @Min(value = 0, message = "나이는 0 이상이어야 합니다.")
     @Max(value = 150, message = "나이는 150 이하여야 합니다.")
-    private Integer age;
+    Integer age
+) {
 }
 ```
 

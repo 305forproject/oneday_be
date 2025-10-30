@@ -50,23 +50,35 @@ public class BusinessException extends RuntimeException {
 @RequiredArgsConstructor
 public enum ErrorCode {
 
-	// 공통
+	// 공통 (4xx, 5xx)
 	INVALID_INPUT_VALUE(400, "C001", "잘못된 입력값입니다."),
-	INTERNAL_SERVER_ERROR(500, "C002", "서버 내부 오류가 발생했습니다."),
+	UNAUTHORIZED(401, "C002", "인증이 필요합니다."),
+	FORBIDDEN(403, "C003", "권한이 없습니다."),
+	INTERNAL_SERVER_ERROR(500, "C004", "서버 내부 오류가 발생했습니다."),
 
-	// 사용자
+	// 사용자 (4xx)
 	USER_NOT_FOUND(404, "U001", "사용자를 찾을 수 없습니다."),
 	DUPLICATE_EMAIL(409, "U002", "이미 존재하는 이메일입니다."),
+	INVALID_PASSWORD(400, "U003", "비밀번호가 일치하지 않습니다."),
 
-	// 주문
+	// 주문 (4xx)
 	ORDER_NOT_FOUND(404, "O001", "주문을 찾을 수 없습니다."),
-	INSUFFICIENT_STOCK(400, "O002", "재고가 부족합니다.");
+	INSUFFICIENT_STOCK(400, "O002", "재고가 부족합니다."),
+	ORDER_ALREADY_CANCELLED(409, "O003", "이미 취소된 주문입니다.");
 
 	private final int status;
 	private final String code;
 	private final String message;
 }
 ```
+
+**HTTP 상태 코드 사용 가이드**:
+- **400 Bad Request**: 클라이언트 입력 오류, 유효성 검증 실패
+- **401 Unauthorized**: 인증 실패 (로그인 필요)
+- **403 Forbidden**: 권한 없음 (인증은 되었으나 접근 권한 없음)
+- **404 Not Found**: 리소스를 찾을 수 없음
+- **409 Conflict**: 리소스 충돌 (중복, 상태 충돌)
+- **500 Internal Server Error**: 서버 내부 오류
 
 ### 2.3 도메인별 커스텀 예외
 

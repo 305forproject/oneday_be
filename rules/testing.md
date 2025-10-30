@@ -198,9 +198,45 @@ verify(userRepository, atLeastOnce()).
 save(any(User.class));
 ```
 
-## 4. 테스트 케이스 작성 예시
+## 4. 테스트 데이터 재사용
 
-### 4.1 CRUD 테스트
+### 4.1 @BeforeEach 활용
+
+```java
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
+
+	@Mock
+	private UserRepository userRepository;
+
+	@InjectMocks
+	private UserService userService;
+
+	private User user;
+	private UserRequest userRequest;
+
+	// ✅ 공통 테스트 데이터는 @BeforeEach에서 초기화
+	@BeforeEach
+	void setUp() {
+		user = User.builder()
+			.email("user@example.com")
+			.name("홍길동")
+			.build();
+
+		userRequest = new UserRequest("user@example.com", "홍길동");
+	}
+}
+```
+
+**주의사항**:
+- 테스트 간 격리를 위해 매 테스트마다 새로운 객체 생성
+- `@BeforeEach`는 각 테스트 실행 전에 호출됨
+- 공통으로 사용되는 테스트 데이터만 `@BeforeEach`에 작성
+- 특정 테스트에만 필요한 데이터는 해당 테스트 메서드 내에서 생성
+
+## 5. 테스트 케이스 작성 예시
+
+### 5.1 CRUD 테스트
 
 ```java
 

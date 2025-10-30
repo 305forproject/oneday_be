@@ -90,11 +90,11 @@ public abstract class BaseEntity {
 
 	@CreatedDate
 	@Column(nullable = false, updatable = false)
-	private LocalDateTime createdAt;
+	private LocalDateTime createdAt;  // DB: created_at (자동 변환)
 
 	@LastModifiedDate
 	@Column(nullable = false)
-	private LocalDateTime updatedAt;
+	private LocalDateTime updatedAt;  // DB: updated_at (자동 변환)
 }
 ```
 
@@ -252,15 +252,33 @@ public class OrderItem {
 
 ### 6.2 컬럼명
 
-- **스네이크 케이스** 사용
+- **Spring의 네이밍 전략 활용** (CamelCaseToUnderscoresNamingStrategy)
+- `@Column(name = "...")` 명시 **불필요** (자동 변환)
+- 예외: 레거시 DB 연동, 예약어 회피, 특수한 컬럼명이 필요한 경우만 명시
 
 ```java
+// Good - Spring 네이밍 전략 활용
+@Column(nullable = false, updatable = false)
+private LocalDateTime createdAt;  // DB: created_at
 
-@Column(name = "created_at")
-private LocalDateTime createdAt;
+@Column(length = 50)
+private String userName;  // DB: user_name
 
-@Column(name = "user_name")
-private String userName;
+// 예외: 특수한 경우만 명시
+@Column(name = "user_id_fk")  // 관례를 따르지 않는 경우
+private Long userId;
+
+@Column(name = "`order`")  // MySQL 예약어 회피
+private String order;
+```
+
+**application.yml 설정 필수**:
+```yaml
+spring:
+  jpa:
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
 ```
 
 ## 7. Repository 작성 규칙

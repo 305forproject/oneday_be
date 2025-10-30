@@ -110,6 +110,69 @@ package com.company.project.Service.User;
 package com.company.project.controller.Order_Management;
 ```
 
+### 2.6 final 키워드 사용
+
+#### Entity에서 final 사용 규칙
+
+```java
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class User {
+    
+    // ❌ JPA가 관리하는 필드는 final 사용 금지
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String email;
+    private String name;
+    
+    // ✅ 불변 필드는 final + 초기화
+    @Column(nullable = false)
+    private final boolean active = true;
+    
+    @Column(nullable = false, updatable = false)
+    private final LocalDateTime registeredAt = LocalDateTime.now();
+    
+    @Builder
+    public User(String email, String name) {
+        this.email = email;
+        this.name = name;
+    }
+}
+```
+
+#### Service에서 final 사용
+
+```java
+@Service
+@RequiredArgsConstructor
+public class UserService {
+    // ✅ 의존성 주입 필드는 final 사용
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+}
+```
+
+#### DTO에서 final 사용
+
+```java
+@Getter
+public class UserResponse {
+    // ✅ DTO는 불변 객체로 설계 (final 권장)
+    private final Long id;
+    private final String email;
+    private final String name;
+    
+    public UserResponse(User user) {
+        this.id = user.getId();
+        this.email = user.getEmail();
+        this.name = user.getName();
+    }
+}
+```
+
 ## 3. 포맷팅
 
 ### 3.1 들여쓰기
@@ -299,9 +362,173 @@ public class User {
 }
 ```
 
-## 7. 요구사항 기반 개발 원칙
+## 7. record 사용 가이드 (Java 16+)
 
-### 7.1 YAGNI (You Aren't Gonna Need It)
+### 7.1 record 사용 권장 대상
+
+- **DTO (Request, Response)**
+- **이벤트 객체**
+- **설정 객체**
+- **불변 데이터 모델**
+
+```java
+// ✅ DTO
+public record UserRequest(
+    @NotBlank String email,
+    @NotBlank String password,
+    @NotBlank String name
+) {
+}
+
+public record UserResponse(
+    Long id,
+    String email,
+    String name
+) {
+    public static UserResponse from(User user) {
+        return new UserResponse(
+            user.getId(),
+            user.getEmail(),
+            user.getName()
+        );
+    }
+}
+
+// ✅ 이벤트
+public record UserCreatedEvent(Long userId, String email, LocalDateTime createdAt) {
+}
+
+// ✅ 설정
+public record JwtProperties(String secret, long expiration) {
+}
+```
+
+### 7.2 record의 장점
+
+- **불변성 자동 보장**: 모든 필드가 final
+- **보일러플레이트 제거**: 생성자, getter, equals, hashCode, toString 자동 생성
+- **코드 간결성**: 약 50% 코드 감소
+- **명확한 의도**: "불변 데이터 전달용" 의미 명확
+- **Java 표준**: Lombok 의존성 제거 가능
+
+### 7.3 record 사용 시 주의사항
+
+```java
+// ✅ getter 메서드명: fieldName() 형태
+UserResponse response = new UserResponse(1L, "test@example.com", "홍길동");
+String email = response.email();    // getEmail() 아님
+String name = response.name();      // getName() 아님
+
+// ✅ Validation 어노테이션 사용 가능
+public record UserRequest(
+    @NotBlank(message = "이메일은 필수입니다.")
+    @Email(message = "올바른 이메일 형식이 아닙니다.")
+    String email
+) {
+}
+
+// ✅ Compact Constructor (검증 로직 추가)
+public record UserRequest(String email, String name) {
+    public UserRequest {
+        if (name != null && name.isBlank()) {
+            throw new IllegalArgumentException("이름은 공백일 수 없습니다.");
+        }
+    }
+}
+
+// ❌ setter 없음: 불변 객체
+// ❌ 상속 불가: final class로 생성됨
+// ✅ interface 구현은 가능
+```
+
+### 7.4 record vs class 선택 기준
+
+**DTO의 역할과 복잡도에 따라 유연하게 선택**
+
+#### record 사용 조건 (✅)
+
+- 단순 조회 응답
+- 값이 변경되지 않음
+- 간단한 변환만 필요
+- 요청 데이터 (불변성 보장 필요)
+
+```java
+// ✅ 단순 CRUD 응답
+public record UserResponse(Long id, String email, String name) {
+    public static UserResponse from(User user) {
+        return new UserResponse(
+            user.getId(),
+            user.getEmail(),
+            user.getName()
+        );
+    }
+}
+
+// ✅ 요청 데이터
+public record UserRequest(
+    @NotBlank String email,
+    @NotBlank String name
+) {
+}
+```
+
+#### class 사용 조건 (✅)
+
+- 서비스 로직에서 값 변경 필요
+- 복잡한 계산 로직 포함
+- 여러 단계를 거쳐 데이터 수집
+- 가변 상태 관리 필요
+
+```java
+// ✅ 복잡한 통계 응답 (여러 단계 데이터 수집)
+@Getter
+@Builder
+public class UserStatisticsResponse {
+    private final Long userId;
+    private final String name;
+    private final int totalPosts;
+    private final int totalComments;
+    private final double activityScore;
+}
+
+// ✅ 가변 상태가 필요한 경우
+@Getter
+public class ReportResponse {
+    private final String reportName;
+    private List<String> errors = new ArrayList<>();
+    
+    public void addError(String error) {
+        this.errors.add(error);
+    }
+}
+
+// ✅ Entity는 class 사용 (JPA 요구사항)
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String email;
+}
+```
+
+#### 결정 기준 요약
+
+| 상황 | 추천 | 이유 |
+|------|------|------|
+| 단순 조회 응답 | record ✅ | 불변성, 간결함 |
+| 요청 데이터 | record ✅ | 검증 후 변경 불필요 |
+| 값 변경 필요 | class ✅ | 가변 상태 관리 |
+| 복잡한 계산 | class ✅ | 생성자 로직 복잡 |
+| 여러 단계 수집 | class + Builder ✅ | 점진적 데이터 설정 |
+| Entity | class ✅ | JPA 요구사항 |
+
+## 8. 요구사항 기반 개발 원칙
+
+### 8.1 YAGNI (You Aren't Gonna Need It)
 
 - **요구사항에 명시된 기능만 구현**
 - 예상, 예측, 망상으로 인한 추가 기능/코드 생성 지양
@@ -329,7 +556,7 @@ public class UserService {
 }
 ```
 
-### 7.2 Over-Engineering 방지
+### 8.2 Over-Engineering 방지
 
 - 현재 필요하지 않은 추상화 계층 생성 금지
 - 단순한 기능을 복잡하게 만들지 않기
