@@ -307,27 +307,82 @@ public class UserService {
 
 - 데이터 정의와 JPA 매핑만 포함
 - 복잡한 비즈니스 로직 금지
-- 단순한 도메인 로직만 허용 (예: isActive())
+- 허용되는 메서드:
+  - 상태 확인 메서드 (예: `isActive()`, `isExpired()`)
+  - 단순 계산 메서드 (예: `getTotalPrice()`)
+  - 연관관계 편의 메서드
+  - 명시적 변경 메서드 (예: `updateInfo()`)
 
 ```java
-// Good - 단순한 Entity
+// Good - 허용되는 Entity 메서드
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class Order {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private int quantity;
+    private int price;
+    
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
+    
+    // ✅ 상태 확인 메서드
+    public boolean isCompleted() {
+        return this.status == OrderStatus.COMPLETED;
+    }
+    
+    // ✅ 단순 계산 메서드
+    public int getTotalPrice() {
+        return this.quantity * this.price;
+    }
+    
+    // ✅ 명시적 변경 메서드
+    public void cancel() {
+        if (this.status == OrderStatus.COMPLETED) {
+            throw new IllegalStateException("완료된 주문은 취소할 수 없습니다.");
+        }
+        this.status = OrderStatus.CANCELLED;
+    }
+}
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+// Bad - 복잡한 비즈니스 로직
+@Entity
+public class Order {
+    
+    // ❌ 외부 의존성이 필요한 로직
+    public void processPayment(PaymentGateway gateway) {
+        gateway.charge(this.getTotalPrice());
+    }
+    
+    // ❌ 여러 Entity를 조합하는 로직
+    public void validateStock(Product product, Inventory inventory) {
+        // 복잡한 검증 로직
+    }
+}
+```
 
-	private String email;
-	private String name;
-	private boolean active;
-
-	// 단순한 도메인 로직만 허용
-	public boolean isActive() {
-		return this.active;
-	}
+**비즈니스 로직은 Service로**:
+```java
+@Service
+@RequiredArgsConstructor
+public class OrderService {
+    
+    private final OrderRepository orderRepository;
+    private final PaymentGateway paymentGateway;
+    
+    @Transactional
+    public void processPayment(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new OrderNotFoundException());
+        
+        // ✅ 복잡한 로직은 Service에서
+        paymentGateway.charge(order.getTotalPrice());
+        order.complete();
+    }
 }
 ```
 
