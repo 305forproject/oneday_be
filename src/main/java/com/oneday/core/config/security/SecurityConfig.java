@@ -37,6 +37,8 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				// Swagger UI 접근 허용
 				.requestMatchers("/swagger-ui/**").permitAll()
+				// 회원가입 API 접근 허용
+				.requestMatchers("/api/auth/signup").permitAll()
 				// 나머지는 인증 필요
 				.anyRequest().authenticated()
 			)
