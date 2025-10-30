@@ -2,6 +2,7 @@ package com.oneday.core.dto.user;
 
 import com.oneday.core.entity.Role;
 import com.oneday.core.entity.User;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 
@@ -11,12 +12,34 @@ import java.time.LocalDateTime;
  * @author Zion
  * @since 2025-10-30
  */
+@Schema(description = "사용자 응답")
 public record UserResponse(
+    @Schema(description = "사용자 ID", example = "1")
     Long id,
+
+    @Schema(description = "이메일 주소", example = "user@example.com")
     String email,
+
+    @Schema(description = "사용자 이름", example = "홍길동")
     String name,
+
+    @Schema(description = "사용자 권한", example = "USER")
     Role role,
+
+    @Schema(
+        description = "생성 일시",
+        example = "2025-01-30T10:00:00",
+        type = "string",
+        format = "date-time"
+    )
     LocalDateTime createdAt,
+
+    @Schema(
+        description = "수정 일시",
+        example = "2025-01-30T10:00:00",
+        type = "string",
+        format = "date-time"
+    )
     LocalDateTime updatedAt
 ) {
     /**
