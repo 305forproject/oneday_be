@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.oneday.core.dto.common.ApiResponse;
 import com.oneday.core.exception.user.DuplicateEmailException;
+import com.oneday.core.exception.user.InvalidPasswordException;
 import com.oneday.core.exception.user.UserNotFoundException;
 
 import lombok.extern.slf4j.Slf4j;
@@ -67,6 +68,20 @@ public class GlobalExceptionHandler {
     return ResponseEntity
       .status(HttpStatus.NOT_FOUND)
       .body(ApiResponse.error("U001", e.getMessage()));
+  }
+
+  /**
+   * 비밀번호 불일치 예외 처리
+   */
+  @ExceptionHandler(InvalidPasswordException.class)
+  public ResponseEntity<ApiResponse<Void>> handleInvalidPasswordException(
+    InvalidPasswordException e
+  ) {
+    log.warn("비밀번호 불일치: {}", e.getMessage());
+
+    return ResponseEntity
+      .status(HttpStatus.UNAUTHORIZED)
+      .body(ApiResponse.error("U004", e.getMessage()));
   }
 
   /**

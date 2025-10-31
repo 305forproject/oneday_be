@@ -1,0 +1,19 @@
+package com.oneday.core.exception.user;
+
+/**
+ * 비밀번호 불일치 예외
+ *
+ * @author Zion
+ * @since 2025-10-31
+ */
+public class InvalidPasswordException extends RuntimeException {
+
+  public InvalidPasswordException() {
+    super("비밀번호가 일치하지 않습니다.");
+  }
+
+  public InvalidPasswordException(String message) {
+    super(message);
+  }
+}
+
