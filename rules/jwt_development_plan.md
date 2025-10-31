@@ -398,29 +398,29 @@ FORBIDDEN(403, "AUTH006", "접근 권한이 없습니다"),
 - [x] UserServiceTest 작성 (testing.md 규칙 준수)
 
 ### Phase 2
-- [ ] JwtTokenProviderTest 작성
-- [ ] JwtTokenProvider 구현
-- [ ] CustomUserDetailsServiceTest 작성
-- [ ] CustomUserDetailsService 구현
+- [x] JwtTokenProviderTest 작성 (9개 테스트)
+- [x] JwtTokenProvider 구현
+- [x] CustomUserDetailsServiceTest 작성 (3개 테스트)
+- [x] CustomUserDetailsService 구현
 
 ### Phase 3
-- [ ] SignUpRequest/Response DTO 작성
-- [ ] AuthServiceTest (회원가입) 작성
-- [ ] AuthService (회원가입) 구현
-- [ ] AuthControllerTest (회원가입) 작성
-- [ ] AuthController (회원가입) 구현
+- [x] SignUpRequest/Response DTO 작성
+- [x] AuthServiceTest (회원가입) 작성
+- [x] AuthService (회원가입) 구현
+- [x] AuthControllerTest (회원가입) 작성
+- [x] AuthController (회원가입) 구현
 
 ### Phase 4
-- [ ] LoginRequest/Response DTO 작성
-- [ ] AuthServiceTest (로그인) 작성
-- [ ] AuthService (로그인) 구현
-- [ ] AuthControllerTest (로그인) 작성
-- [ ] AuthController (로그인) 구현
+- [x] LoginRequest/Response DTO 작성
+- [x] AuthServiceTest (로그인) 작성
+- [x] AuthService (로그인) 구현
+- [x] AuthControllerTest (로그인) 작성
+- [x] AuthController (로그인) 구현
 
 ### Phase 5
-- [ ] JwtAuthenticationFilterTest 작성
-- [ ] JwtAuthenticationFilter 구현
-- [ ] SecurityConfig 작성
+- [x] JwtAuthenticationFilterTest 작성 (4개 테스트)
+- [x] JwtAuthenticationFilter 구현
+- [x] SecurityConfig 작성
 
 ### Phase 6
 - [ ] ErrorCode enum 업데이트
@@ -446,6 +446,13 @@ FORBIDDEN(403, "AUTH006", "접근 권한이 없습니다"),
 ---
 
 ## 현재 진행 상황
-- 현재 단계: **Phase 1 완료 ✅**
-- 다음 단계: **Phase 2 - 3단계 (JWT 유틸리티 클래스)**
+- 현재 단계: **Phase 4 완료 ✅ (로그인 기능), Phase 5 완료 ✅ (JWT 필터 및 인가)**
+- 다음 단계: **Phase 6 - 11단계 (예외 처리 및 통합 테스트)**
+
+## Swagger 문서화
+- [x] swagger_documentation.md 규칙 생성
+- [x] OpenApiConfig 설정
+- [x] application.yml Springdoc 설정
+- [x] UserRequest, UserResponse에 @Schema 어노테이션 추가
+- 접속 URL: `http://localhost:8080/swagger-ui.html`
 
