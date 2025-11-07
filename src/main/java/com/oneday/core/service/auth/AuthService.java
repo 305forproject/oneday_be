@@ -1,10 +1,14 @@
 package com.oneday.core.service.auth;
 
+import com.oneday.core.config.security.JwtTokenProvider;
+import com.oneday.core.dto.auth.LoginRequest;
+import com.oneday.core.dto.auth.LoginResponse;
 import com.oneday.core.dto.auth.SignUpRequest;
 import com.oneday.core.dto.auth.SignUpResponse;
 import com.oneday.core.entity.Role;
 import com.oneday.core.entity.User;
 import com.oneday.core.exception.auth.DuplicateEmailException;
+import com.oneday.core.exception.auth.InvalidCredentialsException;
 import com.oneday.core.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +30,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 회원가입
@@ -64,6 +69,38 @@ public class AuthService {
             savedUser.getName(),
             savedUser.getCreatedAt()
         );
+    }
+
+    /**
+     * 로그인
+     * @param request 로그인 요청 정보 (이메일, 비밀번호)
+     * @return JWT 토큰 (Access Token, Refresh Token)
+     * @throws InvalidCredentialsException 이메일 또는 비밀번호가 올바르지 않은 경우
+     */
+    public LoginResponse login(LoginRequest request) {
+        log.info("로그인 시도: email={}", request.email());
+
+        // 1. 사용자 조회
+        User user = userRepository.findByEmail(request.email())
+            .orElseThrow(() -> {
+                log.warn("로그인 실패 - 존재하지 않는 이메일: {}", request.email());
+                return new InvalidCredentialsException("이메일 또는 비밀번호가 올바르지 않습니다");
+            });
+
+        // 2. 비밀번호 검증
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            log.warn("로그인 실패 - 비밀번호 불일치: email={}", request.email());
+            throw new InvalidCredentialsException("이메일 또는 비밀번호가 올바르지 않습니다");
+        }
+
+        // 3. JWT 토큰 생성 (User 엔티티가 UserDetails를 구현하므로 직접 전달)
+        String accessToken = jwtTokenProvider.generateAccessToken(user);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user);
+
+        log.info("로그인 성공: email={}", request.email());
+
+        // 4. 응답 반환
+        return new LoginResponse(accessToken, refreshToken);
     }
 }
 

@@ -1,5 +1,7 @@
 package com.oneday.core.controller.auth;
 
+import com.oneday.core.dto.auth.LoginRequest;
+import com.oneday.core.dto.auth.LoginResponse;
 import com.oneday.core.dto.auth.SignUpRequest;
 import com.oneday.core.dto.auth.SignUpResponse;
 import com.oneday.core.dto.common.ApiResponse;
@@ -38,6 +40,22 @@ public class AuthController {
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(ApiResponse.success(response));
+    }
+
+    /**
+     * 로그인 API
+     * @param request 로그인 요청 정보 (이메일, 비밀번호)
+     * @return JWT 토큰 (Access Token, Refresh Token)
+     */
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<LoginResponse>> login(
+            @Valid @RequestBody LoginRequest request) {
+
+        log.info("로그인 API 호출: email={}", request.email());
+
+        LoginResponse response = authService.login(request);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
 

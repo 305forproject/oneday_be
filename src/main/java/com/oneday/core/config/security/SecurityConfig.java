@@ -50,7 +50,7 @@ public class SecurityConfig {
 
             // 요청 권한 설정
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/signup").permitAll()  // 회원가입은 인증 불필요
+                .requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()  // 회원가입은 인증 불필요
                 .anyRequest().authenticated()  // 그 외 요청은 인증 필요
             );
 
