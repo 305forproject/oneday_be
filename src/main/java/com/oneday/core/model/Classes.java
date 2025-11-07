@@ -29,7 +29,7 @@ public class Classes {
 	private int teacherId;
 
 	@Column(name = "category_id")
-	private int categoryId;
+	private Integer categoryId;
 
 	@Column(name = "class_name")
 	private String className;
