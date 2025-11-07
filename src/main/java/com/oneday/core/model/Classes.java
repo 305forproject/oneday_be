@@ -15,8 +15,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "classes")
-@Data
-@NoArgsConstructor
+@Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Classes {
 
