@@ -26,7 +26,7 @@ public class Classes {
 	private int classId;
 
 	@Column(name = "teacher_id")
-	private int teacherId;
+	private Integer teacherId;
 
 	@Column(name = "category_id")
 	private Integer categoryId;
