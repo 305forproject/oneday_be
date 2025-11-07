@@ -56,8 +56,8 @@ public class Classes {
 	private String zipcode;
 
 	@Column(name = "max_capacity")
-	private int maxCapacity;
+	private Integer maxCapacity;
 
 	@Column(name = "price")
-	private int price;
+	private Integer price;
 }
