@@ -11,6 +11,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -48,18 +49,22 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
-			// CSRF 비활성화 (JWT 사용)
-			.csrf(AbstractHttpConfigurer::disable)
+				// CSRF 비활성화 (JWT 사용)
+				.csrf(AbstractHttpConfigurer::disable)
 
-			// 세션 사용하지 않음 (JWT 기반 인증)
-			.sessionManagement(session ->
-				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				// 세션 사용하지 않음 (JWT 기반 인증)
+				.sessionManagement(session ->
+						session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-			// 요청 권한 설정
-			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()  // 회원가입은 인증 불필요
-				.anyRequest().authenticated()  // 그 외 요청은 인증 필요
-			);
+				// 요청 권한 설정
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()  // 회원가입은 인증 불필요
+						.requestMatchers("/api/auth/me").authenticated()
+						.anyRequest().authenticated()  // 그 외 요청은 인증 필요
+				)
+
+				// JWT 인증 필터 추가
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
