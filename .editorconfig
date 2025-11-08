@@ -1,0 +1,57 @@
+# EditorConfig: 코드 스타일 통일 설정
+# Windows와 Mac 간 포맷팅 차이 해결
+# https://editorconfig.org
+
+root = true
+
+# 모든 파일 공통 설정
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Java 파일 설정 (탭 사용)
+[*.java]
+indent_style = tab
+indent_size = 4
+tab_width = 4
+continuation_indent_size = 8
+
+# Gradle 파일 설정
+[*.gradle]
+indent_style = tab
+indent_size = 4
+
+# YAML 파일 설정 (스페이스 사용)
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# JSON 파일 설정
+[*.json]
+indent_style = space
+indent_size = 2
+
+# Properties 파일 설정
+[*.properties]
+indent_style = space
+indent_size = 4
+
+# XML 파일 설정
+[*.xml]
+indent_style = tab
+indent_size = 4
+
+# Markdown 파일 설정
+[*.md]
+trim_trailing_whitespace = false
+indent_style = space
+indent_size = 2
+
+# Shell Script 설정
+[*.sh]
+indent_style = tab
+indent_size = 4
+end_of_line = lf
+
