@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.oneday.core.config.security.JwtTokenProvider;
 import com.oneday.core.dto.auth.LoginRequest;
 import com.oneday.core.dto.auth.LoginResponse;
+import com.oneday.core.dto.auth.LogoutResponse;
 import com.oneday.core.dto.auth.SignUpRequest;
 import com.oneday.core.dto.auth.SignUpResponse;
 import com.oneday.core.dto.auth.TokenRefreshRequest;
@@ -166,6 +167,32 @@ public class AuthService {
 				newRefreshToken,
 				jwtTokenProvider.getAccessTokenExpirationTime()
 		);
+	}
+
+	/**
+	 * 로그아웃
+	 * Refresh Token을 DB에서 삭제하여 무효화합니다
+	 *
+	 * @param email 로그아웃할 사용자 이메일
+	 * @return 로그아웃 응답
+	 */
+	@Transactional
+	public LogoutResponse logout(String email) {
+		log.info("로그아웃 시도: email={}", email);
+
+		// 사용자 조회
+		User user = userRepository.findByEmail(email)
+				.orElseThrow(() -> {
+					log.warn("로그아웃 실패 - 존재하지 않는 사용자: {}", email);
+					return new InvalidCredentialsException("사용자를 찾을 수 없습니다");
+				});
+
+		// Refresh Token 삭제 (멱등성: 없어도 에러 발생하지 않음)
+		refreshTokenRepository.deleteByUser(user);
+
+		log.info("로그아웃 완료: email={}", email);
+
+		return LogoutResponse.success();
 	}
 
 	/**

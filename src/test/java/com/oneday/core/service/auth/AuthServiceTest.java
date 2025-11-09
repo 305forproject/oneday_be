@@ -3,7 +3,6 @@ package com.oneday.core.service.auth;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -21,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.oneday.core.config.security.JwtTokenProvider;
 import com.oneday.core.dto.auth.LoginRequest;
 import com.oneday.core.dto.auth.LoginResponse;
+import com.oneday.core.dto.auth.LogoutResponse;
 import com.oneday.core.dto.auth.SignUpRequest;
 import com.oneday.core.dto.auth.SignUpResponse;
 import com.oneday.core.dto.auth.TokenRefreshRequest;
@@ -383,6 +383,76 @@ class AuthServiceTest {
 					.hasMessageContaining("유효하지 않은 Refresh Token입니다");
 
 			verify(refreshTokenRepository).delete(refreshToken);
+		}
+	}
+
+	// ============================================
+	// Phase 7: 로그아웃 테스트
+	// ============================================
+
+	@Nested
+	@DisplayName("로그아웃")
+	class LogoutTests {
+
+		@Test
+		@DisplayName("로그아웃 성공")
+		void 로그아웃_성공() {
+			// Given: 로그인한 사용자
+			String email = "test@example.com";
+
+			User user = User.builder()
+					.email(email)
+					.password("password")
+					.name("Test User")
+					.role(Role.USER)
+					.build();
+
+			given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+			willDoNothing().given(refreshTokenRepository).deleteByUser(user);
+
+			// When: 로그아웃
+			LogoutResponse response = authService.logout(email);
+
+			// Then: Refresh Token이 삭제된다
+			assertThat(response.message()).contains("로그아웃");
+			assertThat(response.logoutAt()).isNotNull();
+
+			verify(userRepository).findByEmail(email);
+			verify(refreshTokenRepository).deleteByUser(user);
+		}
+
+		@Test
+		@DisplayName("로그아웃 실패 - 존재하지 않는 사용자")
+		void 로그아웃_실패_존재하지_않는_사용자() {
+			// Given: 존재하지 않는 사용자
+			String email = "notfound@example.com";
+
+			given(userRepository.findByEmail(email)).willReturn(Optional.empty());
+
+			// When & Then: 예외 발생
+			assertThatThrownBy(() -> authService.logout(email))
+					.isInstanceOf(InvalidCredentialsException.class)
+					.hasMessageContaining("사용자를 찾을 수 없습니다");
+
+			verify(refreshTokenRepository, never()).deleteByUser(any());
+		}
+
+		@Test
+		@DisplayName("로그아웃 후 Refresh Token으로 갱신 시도하면 실패")
+		void 로그아웃_후_토큰_갱신_실패() {
+			// Given: 로그아웃된 사용자의 Refresh Token
+			String token = "logged-out-token";
+
+			// 로그아웃으로 인해 DB에서 삭제됨
+			given(refreshTokenRepository.findByToken(token))
+					.willReturn(Optional.empty());
+
+			TokenRefreshRequest request = new TokenRefreshRequest(token);
+
+			// When & Then: 토큰 갱신 실패
+			assertThatThrownBy(() -> authService.refreshToken(request))
+					.isInstanceOf(InvalidRefreshTokenException.class)
+					.hasMessageContaining("유효하지 않은 Refresh Token입니다");
 		}
 	}
 }
