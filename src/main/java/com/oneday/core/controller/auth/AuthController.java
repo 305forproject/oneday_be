@@ -14,6 +14,8 @@ import com.oneday.core.dto.auth.LoginRequest;
 import com.oneday.core.dto.auth.LoginResponse;
 import com.oneday.core.dto.auth.SignUpRequest;
 import com.oneday.core.dto.auth.SignUpResponse;
+import com.oneday.core.dto.auth.TokenRefreshRequest;
+import com.oneday.core.dto.auth.TokenRefreshResponse;
 import com.oneday.core.dto.common.ApiResponse;
 import com.oneday.core.service.auth.AuthService;
 
@@ -59,6 +61,22 @@ public class AuthController {
 		log.info("로그인 API 호출: email={}", request.email());
 
 		LoginResponse response = authService.login(request);
+
+		return ResponseEntity.ok(ApiResponse.success(response));
+	}
+
+	/**
+	 * Refresh Token으로 Access Token 갱신 API
+	 * @param request Refresh Token 요청
+	 * @return 새로운 Access Token과 Refresh Token
+	 */
+	@PostMapping("/refresh")
+	public ResponseEntity<ApiResponse<TokenRefreshResponse>> refreshToken(
+			@Valid @RequestBody TokenRefreshRequest request) {
+
+		log.info("토큰 갱신 API 호출");
+
+		TokenRefreshResponse response = authService.refreshToken(request);
 
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
