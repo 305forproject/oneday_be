@@ -1,8 +1,10 @@
 package com.oneday.core.config.security;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
@@ -142,10 +144,7 @@ public class JwtTokenProvider {
 	public Authentication getAuthentication(String token) {
 		Claims claims = parseToken(token);
 
-		List<String> authorities = (List<String>)claims.get("authorities");
-		List<SimpleGrantedAuthority> grantedAuthorities = authorities.stream()
-				.map(SimpleGrantedAuthority::new)
-				.collect(Collectors.toList());
+		List<SimpleGrantedAuthority> grantedAuthorities = extractAuthorities(claims);
 
 		UserDetails userDetails = User.builder()
 				.username(claims.getSubject())
@@ -161,6 +160,35 @@ public class JwtTokenProvider {
 	}
 
 	/**
+	 * Claims에서 권한 정보 추출
+	 * null 체크 및 타입 검증을 수행하여 안전하게 권한 리스트를 반환합니다.
+	 *
+	 * @param claims JWT Claims
+	 * @return 권한 리스트
+	 */
+	private List<SimpleGrantedAuthority> extractAuthorities(Claims claims) {
+		Object authoritiesObj = claims.get("authorities");
+
+		if (authoritiesObj == null) {
+			log.debug("토큰에 authorities 클레임 없음 - 빈 권한 리스트 반환");
+			return Collections.emptyList();
+		}
+
+		if (!(authoritiesObj instanceof List<?>)) {
+			log.warn("authorities 클레임 타입 오류: {}", authoritiesObj.getClass());
+			return Collections.emptyList();
+		}
+
+		@SuppressWarnings("unchecked")
+		List<String> authorities = (List<String>)authoritiesObj;
+
+		return authorities.stream()
+				.filter(Objects::nonNull) // null 값 필터링
+				.map(SimpleGrantedAuthority::new)
+				.collect(Collectors.toList());
+	}
+
+	/**
 	 * Access Token 생성 (이메일로 생성)
 	 *
 	 * @param email 사용자 이메일
@@ -172,6 +200,7 @@ public class JwtTokenProvider {
 
 		String token = Jwts.builder()
 				.setSubject(email)
+				.claim("authorities", Collections.emptyList()) // 빈 권한 리스트 추가 (구조 일관성)
 				.setIssuedAt(now)
 				.setExpiration(expiryDate)
 				.signWith(getSigningKey())
