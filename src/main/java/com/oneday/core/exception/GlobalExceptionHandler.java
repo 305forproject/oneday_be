@@ -99,14 +99,9 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiResponse<Void>> handleInvalidRefreshToken(
 			InvalidRefreshTokenException ex) {
 
-		ApiResponse.ErrorResponse error = new ApiResponse.ErrorResponse(
-				"AUTH006",
-				ex.getMessage()
-		);
-
 		return ResponseEntity
 				.status(HttpStatus.UNAUTHORIZED)
-				.body(ApiResponse.error(error));
+				.body(ApiResponse.error(ErrorCode.INVALID_REFRESH_TOKEN, ex.getMessage()));
 	}
 
 	/**
