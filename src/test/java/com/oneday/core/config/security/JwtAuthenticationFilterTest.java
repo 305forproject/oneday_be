@@ -78,7 +78,7 @@ class JwtAuthenticationFilterTest {
 				);
 
 		given(jwtTokenProvider.getAuthentication(token)).willReturn(authentication);
-		doNothing().when(jwtTokenProvider).validateToken(token);
+		doNothing().when(jwtTokenProvider).validateTokenWithException(token);
 
 		// When
 		jwtAuthenticationFilter.doFilter(request, response, filterChain);
@@ -89,7 +89,7 @@ class JwtAuthenticationFilterTest {
 		assertThat(auth.getName()).isEqualTo(email);
 		assertThat(auth.isAuthenticated()).isTrue();
 
-		verify(jwtTokenProvider).validateToken(token);
+		verify(jwtTokenProvider).validateTokenWithException(token);
 		verify(jwtTokenProvider).getAuthentication(token);
 		verify(filterChain).doFilter(request, response);
 	}
@@ -107,7 +107,7 @@ class JwtAuthenticationFilterTest {
 		assertThat(auth).isNull();
 
 		verify(filterChain).doFilter(request, response);
-		verify(jwtTokenProvider, never()).validateToken(anyString());
+		verify(jwtTokenProvider, never()).validateTokenWithException(anyString());
 	}
 
 	@Test
@@ -118,7 +118,7 @@ class JwtAuthenticationFilterTest {
 		request.addHeader("Authorization", "Bearer " + expiredToken);
 
 		doThrow(new ExpiredTokenException("만료된 토큰입니다."))
-				.when(jwtTokenProvider).validateToken(expiredToken);
+				.when(jwtTokenProvider).validateTokenWithException(expiredToken);
 
 		// When
 		jwtAuthenticationFilter.doFilter(request, response, filterChain);
@@ -127,7 +127,7 @@ class JwtAuthenticationFilterTest {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		assertThat(auth).isNull();
 
-		verify(jwtTokenProvider).validateToken(expiredToken);
+		verify(jwtTokenProvider).validateTokenWithException(expiredToken);
 		verify(jwtTokenProvider, never()).getAuthentication(anyString());
 		verify(filterChain).doFilter(request, response);
 	}
@@ -140,7 +140,7 @@ class JwtAuthenticationFilterTest {
 		request.addHeader("Authorization", "Bearer " + invalidToken);
 
 		doThrow(new InvalidTokenException("유효하지 않은 토큰입니다."))
-				.when(jwtTokenProvider).validateToken(invalidToken);
+				.when(jwtTokenProvider).validateTokenWithException(invalidToken);
 
 		// When
 		jwtAuthenticationFilter.doFilter(request, response, filterChain);
@@ -149,7 +149,7 @@ class JwtAuthenticationFilterTest {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		assertThat(auth).isNull();
 
-		verify(jwtTokenProvider).validateToken(invalidToken);
+		verify(jwtTokenProvider).validateTokenWithException(invalidToken);
 		verify(jwtTokenProvider, never()).getAuthentication(anyString());
 		verify(filterChain).doFilter(request, response);
 	}
@@ -164,7 +164,7 @@ class JwtAuthenticationFilterTest {
 		jwtAuthenticationFilter.doFilter(request, response, filterChain);
 
 		// Then
-		verify(jwtTokenProvider, never()).validateToken(anyString());
+		verify(jwtTokenProvider, never()).validateTokenWithException(anyString());
 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		assertThat(auth).isNull();
@@ -182,7 +182,7 @@ class JwtAuthenticationFilterTest {
 		jwtAuthenticationFilter.doFilter(request, response, filterChain);
 
 		// Then
-		verify(jwtTokenProvider, never()).validateToken(anyString());
+		verify(jwtTokenProvider, never()).validateTokenWithException(anyString());
 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		assertThat(auth).isNull();

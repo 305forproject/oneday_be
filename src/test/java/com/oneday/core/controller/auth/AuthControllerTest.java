@@ -21,8 +21,11 @@ import com.oneday.core.dto.auth.LoginRequest;
 import com.oneday.core.dto.auth.LoginResponse;
 import com.oneday.core.dto.auth.SignUpRequest;
 import com.oneday.core.dto.auth.SignUpResponse;
+import com.oneday.core.dto.auth.TokenRefreshRequest;
+import com.oneday.core.dto.auth.TokenRefreshResponse;
 import com.oneday.core.exception.auth.DuplicateEmailException;
 import com.oneday.core.exception.auth.InvalidCredentialsException;
+import com.oneday.core.exception.auth.InvalidRefreshTokenException;
 import com.oneday.core.service.auth.AuthService;
 
 /**
@@ -173,6 +176,71 @@ class AuthControllerTest {
 	// TODO: 통합 테스트(@SpringBootTest)로 작성 예정
 	// 현재는 Postman을 통한 수동 테스트로 검증
 	// 참고: rules/complete/POSTMAN_TEST_GUIDE.md
+
+	// ============================================
+	// Phase 6: Refresh Token 갱신 테스트
+	// ============================================
+
+	@Test
+	@DisplayName("토큰 갱신 성공")
+	void 토큰_갱신_성공() throws Exception {
+		// Given
+		TokenRefreshRequest request = new TokenRefreshRequest("valid-refresh-token");
+
+		TokenRefreshResponse response = new TokenRefreshResponse(
+				"new-access-token",
+				"new-refresh-token",
+				3600L
+		);
+
+		given(authService.refreshToken(any(TokenRefreshRequest.class)))
+				.willReturn(response);
+
+		// When & Then
+		mockMvc.perform(post("/api/auth/refresh")
+						.with(csrf())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.success").value(true))
+				.andExpect(jsonPath("$.data.accessToken").value("new-access-token"))
+				.andExpect(jsonPath("$.data.refreshToken").value("new-refresh-token"))
+				.andExpect(jsonPath("$.data.tokenType").value("Bearer"));
+	}
+
+	@Test
+	@DisplayName("토큰 갱신 실패 - 만료된 토큰")
+	void 토큰_갱신_실패_만료된_토큰() throws Exception {
+		// Given
+		TokenRefreshRequest request = new TokenRefreshRequest("expired-token");
+
+		given(authService.refreshToken(any(TokenRefreshRequest.class)))
+				.willThrow(new InvalidRefreshTokenException("만료된 Refresh Token입니다"));
+
+		// When & Then
+		mockMvc.perform(post("/api/auth/refresh")
+						.with(csrf())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.error.code").value("AUTH006"));
+	}
+
+	@Test
+	@DisplayName("토큰 갱신 실패 - 빈 토큰")
+	void 토큰_갱신_실패_빈_토큰() throws Exception {
+		// Given
+		TokenRefreshRequest request = new TokenRefreshRequest("");
+
+		// When & Then
+		mockMvc.perform(post("/api/auth/refresh")
+						.with(csrf())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.success").value(false));
+	}
 
 	/*
 	@Test

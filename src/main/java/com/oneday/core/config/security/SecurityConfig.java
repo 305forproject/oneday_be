@@ -58,9 +58,12 @@ public class SecurityConfig {
 
 				// 요청 권한 설정
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()  // 회원가입은 인증 불필요
-						.requestMatchers("/api/auth/me").authenticated()
-						.anyRequest().authenticated()  // 그 외 요청은 인증 필요
+						.requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh")
+						.permitAll()  // 회원가입, 로그인, 토큰 갱신은 인증 불필요
+						.requestMatchers("/api/auth/me")
+						.authenticated()
+						.anyRequest()
+						.authenticated()  // 그 외 요청은 인증 필요
 				)
 
 				// JWT 인증 필터 추가
