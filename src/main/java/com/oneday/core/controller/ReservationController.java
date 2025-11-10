@@ -35,7 +35,10 @@ public class ReservationController {
 		int studentId = (Integer) session.getAttribute("userId");
 
 		try {
-			Reservation createdReservation = reservationService.createReservation(reservationDto, studentId);
+			Reservation createdReservation = reservationService.createReservation(
+            	reservationDto.getClassId(), 
+            	studentId
+        	);
 			return ResponseEntity.status(HttpStatus.CREATED).body(createdReservation);
 		} catch (RuntimeException e) {
 			log.info("예약 생성 실패: {}", e.getMessage());
