@@ -41,7 +41,11 @@ public class ReservationService {
 			throw new RuntimeException("이미 예약한 강의입니다.");
 		}
 
-		long currentCount = reservationRepository.countByClasses_ClassId(dto.getClassId());
+		long currentCount = reservationRepository.countByClasses_ClassIdAndStatus_StatusCode(
+        	dto.getClassId(),
+        	CONFIRMED
+    	);
+    
 		if (currentCount >= targetClass.getMaxCapacity()) {
 			throw new RuntimeException("정원이 모두 마감되었습니다.");
 		}
