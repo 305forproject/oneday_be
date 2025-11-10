@@ -4,13 +4,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import com.oneday.core.entity.Payment;
-import com.oneday.core.respository.PaymentRepository;
+import com.oneday.core.repository.PaymentRepository;
 
 @Service
 @RequiredArgsConstructor
