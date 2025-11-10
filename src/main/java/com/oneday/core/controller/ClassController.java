@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import com.oneday.core.model.Classes;
+import com.oneday.core.entity.Classes;
 import com.oneday.core.service.ClassService;
 
 @RestController
