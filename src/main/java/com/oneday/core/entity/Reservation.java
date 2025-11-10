@@ -39,4 +39,8 @@ public class Reservation {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "status_code")
 	private ReservationStatus status;
+
+	public void updateStatus(ReservationStatus newStatus) {
+		this.status = newStatus;
+	}
 }
