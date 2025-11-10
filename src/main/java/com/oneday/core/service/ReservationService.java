@@ -23,7 +23,7 @@ public class ReservationService {
 	// 예약 확정 상태 번호
 	// 추후 정해지면 변경 할 수도 안 할 수도
 
-	public Reservation createReservation(ReservationRequestDto dto, int studentId) {
+	public Reservation createReservation(int classId, int studentId) {
 		if (dto == null) {
 			throw new RuntimeException("예약 정보가 필요합니다.");
 		}
@@ -36,13 +36,13 @@ public class ReservationService {
 
 		if ((reservationRepository.existsByUser_IdAndClasses_ClassIdAndStatus_StatusCode(
 			studentId,
-			dto.getClassId(),
+			classId,
 			CONFIRMED))) {
 			throw new RuntimeException("이미 예약한 강의입니다.");
 		}
 
 		long currentCount = reservationRepository.countByClasses_ClassIdAndStatus_StatusCode(
-        	dto.getClassId(),
+        	classId,
         	CONFIRMED
     	);
     
@@ -50,7 +50,7 @@ public class ReservationService {
 			throw new RuntimeException("정원이 모두 마감되었습니다.");
 		}
 
-		ReservationStatus pendingStatus = reservationStatusRepository.findById(CONFIRMED)
+		ReservationStatus confirmedStatus = reservationStatusRepository.findById(CONFIRMED)
 			.orElseThrow(() -> new RuntimeException("예약 상태 코드(ID: " + CONFIRMED + ")를 찾을 수 없습니다."));
 
 		Reservation newReservation = Reservation.builder()
