@@ -1,10 +1,11 @@
 package com.oneday.core.repository.user;
 
-import com.oneday.core.entity.User;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import com.oneday.core.entity.User;
 
 /**
  * 사용자 리포지토리

@@ -1,6 +1,7 @@
 package com.oneday.core.dto.common;
 
 import com.oneday.core.exception.ErrorCode;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -89,13 +90,20 @@ public class ApiResponse<T> {
     }
 
     /**
+     * 실패 응답 생성 (ErrorResponse 직접 전달)
+     *
+     * @param errorResponse 에러 응답
+     * @param <T> 데이터 타입
+     * @return 실패 응답
+     */
+    public static <T> ApiResponse<T> error(ErrorResponse errorResponse) {
+        return new ApiResponse<>(false, null, errorResponse);
+    }
+
+    /**
      * 에러 응답 정보
      */
-    @Getter
-    @AllArgsConstructor
-    public static class ErrorResponse {
-        private final String code;
-        private final String message;
+    public record ErrorResponse(String code, String message) {
     }
 }
 

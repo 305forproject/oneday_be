@@ -1,7 +1,8 @@
 package com.oneday.core.exception;
 
-import com.oneday.core.dto.common.ApiResponse;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -11,8 +12,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.oneday.core.dto.common.ApiResponse;
+import com.oneday.core.exception.auth.InvalidRefreshTokenException;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 전역 예외 처리기
@@ -72,13 +75,13 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationException(
-            MethodArgumentNotValidException e) {
+        MethodArgumentNotValidException e) {
 
         log.warn("Validation failed");
 
         Map<String, String> errors = new HashMap<>();
         e.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
+            String fieldName = ((FieldError)error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
@@ -86,6 +89,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(ApiResponse.error(ErrorCode.INVALID_INPUT, errors));
+    }
+
+    /**
+     * Refresh Token 예외 처리
+     * 유효하지 않거나 만료된 Refresh Token 예외를 처리
+     */
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidRefreshToken(
+        InvalidRefreshTokenException ex) {
+
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ApiResponse.error(ErrorCode.INVALID_REFRESH_TOKEN, ex.getMessage()));
     }
 
     /**

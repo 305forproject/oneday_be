@@ -30,7 +30,8 @@ public enum ErrorCode {
     INVALID_CREDENTIALS(401, "AUTH002", "이메일 또는 비밀번호가 올바르지 않습니다"),
     INVALID_TOKEN(401, "AUTH003", "유효하지 않은 토큰입니다"),
     EXPIRED_TOKEN(401, "AUTH004", "만료된 토큰입니다"),
-    USER_NOT_FOUND(404, "AUTH005", "사용자를 찾을 수 없습니다");
+    USER_NOT_FOUND(404, "AUTH005", "사용자를 찾을 수 없습니다"),
+    INVALID_REFRESH_TOKEN(401, "AUTH006", "유효하지 않은 리프레시 토큰입니다");
 
     private final int status;
     private final String code;
