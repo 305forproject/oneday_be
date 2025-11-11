@@ -49,7 +49,7 @@ public class PaymentController {
 			return ResponseEntity.status(HttpStatus.CREATED).body(completedPayment);
 
 		} catch (RuntimeException e) {
-			log.info("결제 및 예약 생성 실패: {}", e.getMessage());
+			log.error("결제 및 예약 생성 실패: {}", e.getMessage(), e);
 			return ResponseEntity.badRequest()
 				.body(Map.of("message", e.getMessage()));
 		}
