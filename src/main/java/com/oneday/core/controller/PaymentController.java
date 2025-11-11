@@ -38,7 +38,7 @@ public class PaymentController {
 					.body(Map.of("message", "로그인이 필요합니다."));
 		}
 
-		int studentId = (Integer)session.getAttribute("userId");
+		long studentId = (Long)session.getAttribute("userId");
 
 		try {
 			Payment completedPayment = paymentService.createReservationAndPayment(
