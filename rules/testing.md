@@ -229,6 +229,7 @@ class UserServiceTest {
 ```
 
 **주의사항**:
+
 - 테스트 간 격리를 위해 매 테스트마다 새로운 객체 생성
 - `@BeforeEach`는 각 테스트 실행 전에 호출됨
 - 공통으로 사용되는 테스트 데이터만 `@BeforeEach`에 작성

@@ -73,6 +73,7 @@ public enum ErrorCode {
 ```
 
 **HTTP 상태 코드 사용 가이드**:
+
 - **400 Bad Request**: 클라이언트 입력 오류, 유효성 검증 실패
 - **401 Unauthorized**: 인증 실패 (로그인 필요)
 - **403 Forbidden**: 권한 없음 (인증은 되었으나 접근 권한 없음)
