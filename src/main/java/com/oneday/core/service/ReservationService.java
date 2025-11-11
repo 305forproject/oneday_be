@@ -24,14 +24,11 @@ public class ReservationService {
 	// 추후 정해지면 변경 할 수도 안 할 수도
 
 	public Reservation createReservation(int classId, int studentId) {
-		if (dto == null) {
-			throw new RuntimeException("예약 정보가 필요합니다.");
-		}
 
 		User targetUser = userRepository.findById(studentId)
 			.orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
 
-		Classes targetClass = classRepository.findById(dto.getClassId())
+		Classes targetClass = classRepository.findById(classId)
 			.orElseThrow(() -> new RuntimeException("존재하지 않는 강의입니다."));
 
 		if ((reservationRepository.existsByUser_IdAndClasses_ClassIdAndStatus_StatusCode(
