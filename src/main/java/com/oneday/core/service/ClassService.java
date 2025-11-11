@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import com.oneday.core.model.Classes;
+import com.oneday.core.entity.Classes;
 import com.oneday.core.repository.ClassRepository;
 
 @Service
