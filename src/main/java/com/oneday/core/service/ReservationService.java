@@ -68,7 +68,7 @@ public class ReservationService {
 	@Transactional
 	public Reservation cancelReservation(int reservationId, int studentId) {
 		ReservationStatus cancelledStatus = reservationStatusRepository.findById(CANCELLED)
-			.orElseThrow(() -> new RuntimeException("취소 상태 코드(ID: 2)를 찾을 수 없습니다."));
+			.orElseThrow(() -> new RuntimeException("취소 상태 코드(ID: " + CANCELLED + ")를 찾을 수 없습니다."));
 
 		Reservation reservation = reservationRepository.findById(reservationId)
 			.orElseThrow(() -> new RuntimeException("존재하지 않는 예약입니다."));
