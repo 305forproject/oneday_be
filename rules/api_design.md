@@ -200,6 +200,7 @@ public record UserRequest(
 ```
 
 **record의 장점**:
+
 - 불변성 자동 보장 (모든 필드 final)
 - 보일러플레이트 제거 (생성자, getter, equals, hashCode, toString 자동 생성)
 - 코드 간결성 (약 50% 감소)
@@ -235,6 +236,7 @@ public record UserResponse(
 ```
 
 **record 사용 시 주의사항**:
+
 - getter 메서드명: `record.fieldName()` 형태 (예: `response.email()`)
 - setter 없음: 불변 객체로 설계됨
 - 상속 불가: interface 구현은 가능
@@ -247,12 +249,14 @@ public record UserResponse(
 #### record 사용 (✅)
 
 **조건**:
+
 - 단순 조회 응답
 - 값이 변경되지 않음
 - 간단한 변환만 필요
 - 요청 데이터 (불변성 보장 필요)
 
 **예시**:
+
 ```java
 // ✅ 단순 CRUD 응답
 public record UserResponse(
@@ -285,12 +289,14 @@ public record PageInfo(int page, int size, long total) {
 #### class 사용 (✅)
 
 **조건**:
+
 - 서비스 로직에서 값 변경 필요
 - 복잡한 계산 로직 포함
 - 여러 단계를 거쳐 데이터 수집
 - 가변 상태 관리 필요
 
 **예시**:
+
 ```java
 // ✅ 복잡한 통계 응답 (여러 단계 데이터 수집)
 @Getter
@@ -349,13 +355,13 @@ public class ReportResponse {
 
 #### 결정 기준 요약
 
-| 상황 | 추천 | 이유 |
-|------|------|------|
-| 단순 조회 응답 | record ✅ | 불변성, 간결함 |
-| 요청 데이터 | record ✅ | 검증 후 변경 불필요 |
-| 값 변경 필요 | class ✅ | 가변 상태 관리 |
-| 복잡한 계산 | class ✅ | 생성자 로직 복잡 |
-| 여러 단계 수집 | class + Builder ✅ | 점진적 데이터 설정 |
+| 상황       | 추천                | 이유          |
+|----------|-------------------|-------------|
+| 단순 조회 응답 | record ✅          | 불변성, 간결함    |
+| 요청 데이터   | record ✅          | 검증 후 변경 불필요 |
+| 값 변경 필요  | class ✅           | 가변 상태 관리    |
+| 복잡한 계산   | class ✅           | 생성자 로직 복잡   |
+| 여러 단계 수집 | class + Builder ✅ | 점진적 데이터 설정  |
 
 ## 6. API 버전 관리
 

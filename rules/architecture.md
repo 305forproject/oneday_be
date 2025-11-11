@@ -308,10 +308,10 @@ public class UserService {
 - 데이터 정의와 JPA 매핑만 포함
 - 복잡한 비즈니스 로직 금지
 - 허용되는 메서드:
-  - 상태 확인 메서드 (예: `isActive()`, `isExpired()`)
-  - 단순 계산 메서드 (예: `getTotalPrice()`)
-  - 연관관계 편의 메서드
-  - 명시적 변경 메서드 (예: `updateInfo()`)
+    - 상태 확인 메서드 (예: `isActive()`, `isExpired()`)
+    - 단순 계산 메서드 (예: `getTotalPrice()`)
+    - 연관관계 편의 메서드
+    - 명시적 변경 메서드 (예: `updateInfo()`)
 
 ```java
 // Good - 허용되는 Entity 메서드
@@ -366,6 +366,7 @@ public class Order {
 ```
 
 **비즈니스 로직은 Service로**:
+
 ```java
 @Service
 @RequiredArgsConstructor
