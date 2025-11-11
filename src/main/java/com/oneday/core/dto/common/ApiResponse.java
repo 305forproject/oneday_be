@@ -8,8 +8,9 @@ import lombok.Getter;
 
 /**
  * API 공통 응답 포맷
+ * <p>
+ * 제네릭 타입 {@code <T>}는 응답 데이터 타입
  *
- * @param <T> 응답 데이터 타입
  * @author zionge2k
  * @since 2025-01-26
  */
