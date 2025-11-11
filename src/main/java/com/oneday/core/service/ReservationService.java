@@ -20,8 +20,8 @@ public class ReservationService {
 	private final ClassRepository classRepository;
 	private final ReservationStatusRepository reservationStatusRepository;
 
-	private static final int CONFIRMED = 1; // "예약 확정"
-	private static final int CANCELLED = 2; // "예약 취소"
+	private static final Integer CONFIRMED = 1; // "예약 확정"
+	private static final Integer CANCELLED = 2; // "예약 취소"
 	// 예약 확정 상태 번호
 	// 추후 정해지면 변경 할 수도 안 할 수도
 
