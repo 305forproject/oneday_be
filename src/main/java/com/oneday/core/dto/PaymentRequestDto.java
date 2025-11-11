@@ -1,10 +1,10 @@
 package com.oneday.core.dto;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 
 import java.util.Map;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 
 @Getter
 public class PaymentRequestDto {
