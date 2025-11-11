@@ -149,8 +149,8 @@ public class AuthService {
         User user = savedToken.getUser();
 
         // 5. 새로운 토큰 발급
-        String newAccessToken = jwtTokenProvider.generateAccessToken(email);
-        String newRefreshToken = jwtTokenProvider.generateRefreshToken(email);
+        String newAccessToken = jwtTokenProvider.generateAccessToken(user);
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken(user);
 
         // 6. Refresh Token Rotation: DB의 Refresh Token 업데이트
         LocalDateTime newExpiresAt = LocalDateTime.now()

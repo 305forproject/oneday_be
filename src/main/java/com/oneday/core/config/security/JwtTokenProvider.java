@@ -188,48 +188,6 @@ public class JwtTokenProvider {
             .collect(Collectors.toList());
     }
 
-    /**
-     * Access Token 생성 (이메일로 생성)
-     *
-     * @param email 사용자 이메일
-     * @return JWT Access Token
-     */
-    public String generateAccessToken(String email) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtProperties.getAccessTokenExpiration());
-
-        String token = Jwts.builder()
-            .setSubject(email)
-            .claim("authorities", Collections.emptyList()) // 빈 권한 리스트 추가 (구조 일관성)
-            .setIssuedAt(now)
-            .setExpiration(expiryDate)
-            .signWith(getSigningKey())
-            .compact();
-
-        log.info("Access Token 생성 완료: email={}", email);
-        return token;
-    }
-
-    /**
-     * Refresh Token 생성 (이메일로 생성)
-     *
-     * @param email 사용자 이메일
-     * @return JWT Refresh Token
-     */
-    public String generateRefreshToken(String email) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtProperties.getRefreshTokenExpiration());
-
-        String token = Jwts.builder()
-            .setSubject(email)
-            .setIssuedAt(now)
-            .setExpiration(expiryDate)
-            .signWith(getSigningKey())
-            .compact();
-
-        log.info("Refresh Token 생성 완료: email={}", email);
-        return token;
-    }
 
     /**
      * JWT 토큰에서 사용자 이메일 추출
