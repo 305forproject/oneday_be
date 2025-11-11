@@ -11,16 +11,14 @@ import java.util.List;
 import com.oneday.core.entity.Classes;
 import com.oneday.core.service.ClassService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/classes")
+@RequiredArgsConstructor
 public class ClassController {
 
 	private final ClassService classService;
-
-	@Autowired
-	public ClassController(ClassService classService) {
-		this.classService = classService;
-	}
 
 	@GetMapping
 	public List<Classes> getAllClasses() {
