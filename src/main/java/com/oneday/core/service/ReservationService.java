@@ -53,7 +53,7 @@ public class ReservationService {
 		Reservation newReservation = Reservation.builder()
 			.user(targetUser)
 			.classes(targetClass)
-			.status(pendingStatus)
+			.status(confirmedStatus)
 			.build();
 
 		return reservationRepository.save(newReservation);
