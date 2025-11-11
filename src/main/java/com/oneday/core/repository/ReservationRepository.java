@@ -17,5 +17,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 		Integer statusCode
 	);
 
-	long countByClasses_ClassId(Integer classId);
+	long countByClasses_ClassIdAndStatus_StatusCode(
+        Integer classId, 
+        Integer statusCode
+    );
 }
