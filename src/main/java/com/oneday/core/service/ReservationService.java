@@ -1,13 +1,7 @@
 package com.oneday.core.service;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.oneday.core.dto.ReservationRequestDto;
-import com.oneday.core.entity.Classes;
-import com.oneday.core.entity.Reservation;
-import com.oneday.core.entity.ReservationStatus;
-import com.oneday.core.entity.User;
 import com.oneday.core.repository.ClassRepository;
 import com.oneday.core.repository.ReservationRepository;
 import com.oneday.core.repository.ReservationStatusRepository;
@@ -15,6 +9,16 @@ import com.oneday.core.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 예약 서비스
+ *
+ * TODO: Entity 구조 변경으로 인한 리팩토링 필요
+ * - Reservation.classes → Reservation.time 변경
+ * - Times 엔티티 추가로 인한 로직 수정 필요
+ *
+ * @deprecated Entity 구조 변경으로 리팩토링 필요
+ */
+@Deprecated
 @Service
 @RequiredArgsConstructor
 public class ReservationService {
@@ -27,6 +31,8 @@ public class ReservationService {
 	// 예약 확정 상태 번호
 	// 추후 정해지면 변경 할 수도 안 할 수도
 
+	// TODO: Entity 구조 변경으로 리팩토링 필요 - classes → time 변경
+	/*
 	public Reservation createReservation(int classId, long studentId) {
 
 		User targetUser = userRepository.findById(studentId)
@@ -62,6 +68,7 @@ public class ReservationService {
 
 		return reservationRepository.save(newReservation);
 	}
+	*/
 
 	/**
 	 * 예약을 취소
@@ -69,6 +76,8 @@ public class ReservationService {
 	 * @param reservationId 취소할 예약 ID
 	 * @param studentId     취소를 요청한 사용자 ID
 	 */
+	// TODO: Entity 구조 변경으로 리팩토링 필요
+	/*
 	@Transactional
 	public Reservation cancelReservation(int reservationId, long studentId) {
 		ReservationStatus cancelledStatus = reservationStatusRepository.findById(CANCELLED)
@@ -101,4 +110,5 @@ public class ReservationService {
 
 		return reservation;
 	}
+	*/
 }

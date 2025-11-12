@@ -1,18 +1,20 @@
 package com.oneday.core.service;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import com.oneday.core.repository.PaymentRepository;
 
 import lombok.RequiredArgsConstructor;
 
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Map;
-
-import com.oneday.core.entity.Payment;
-import com.oneday.core.entity.Reservation;
-import com.oneday.core.repository.PaymentRepository;
-
+/**
+ * 결제 서비스
+ *
+ * TODO: Entity 구조 변경으로 인한 리팩토링 필요
+ * - ReservationService 리팩토링 후 재작성 필요
+ *
+ * @deprecated Entity 구조 변경으로 리팩토링 필요
+ */
+@Deprecated
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
@@ -24,6 +26,8 @@ public class PaymentService {
 	/**
 	 * 결제 승인 후, 예약 생성과 결제 정보 저장을 동시 처리
 	 */
+	// TODO: Entity 구조 변경으로 리팩토링 필요
+	/*
 	@Transactional
 	public Payment createReservationAndPayment(int classId, long studentId, Map<String, Object> tossResponse) {
 
@@ -44,4 +48,5 @@ public class PaymentService {
 
 		return paymentRepository.save(newPayment);
 	}
+	*/
 }
