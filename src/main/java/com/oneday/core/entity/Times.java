@@ -1,5 +1,7 @@
 package com.oneday.core.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,43 +19,33 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * 예약 정보 엔티티
+ * 클래스 시간 정보 엔티티
  *
  * @author zionge2k
  * @since 2025-01-26
  */
 @Entity
-@Table(name = "reservations")
+@Table(name = "times")
+@Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
-@Getter
-@ToString(exclude = {"time", "user", "status"})
-public class Reservation {
+@ToString(exclude = {"classes"})
+public class Times {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "reservation_id")
-	private Integer reservationId;
+	@Column(name = "time_id")
+	private Integer timeId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "time_id", nullable = false)
-	private Times time;
+	@JoinColumn(name = "class_id", nullable = false)
+	private Classes classes;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "student_id", nullable = false)
-	private User user;
+	@Column(name = "start_at")
+	private LocalDateTime startAt;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "status_code", nullable = false)
-	private ReservationStatus status;
-
-	/**
-	 * 예약 상태 변경
-	 *
-	 * @param newStatus 새로운 예약 상태
-	 */
-	public void updateStatus(ReservationStatus newStatus) {
-		this.status = newStatus;
-	}
+	@Column(name = "end_at")
+	private LocalDateTime endAt;
 }
+

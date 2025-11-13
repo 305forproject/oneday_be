@@ -17,43 +17,33 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * 예약 정보 엔티티
+ * 클래스 이미지 엔티티
  *
  * @author zionge2k
  * @since 2025-01-26
  */
 @Entity
-@Table(name = "reservations")
+@Table(name = "images")
+@Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
-@Getter
-@ToString(exclude = {"time", "user", "status"})
-public class Reservation {
+@ToString(exclude = {"classes"})
+public class Images {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "reservation_id")
-	private Integer reservationId;
+	@Column(name = "image_id")
+	private Integer imageId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "time_id", nullable = false)
-	private Times time;
+	@JoinColumn(name = "class_id", nullable = false)
+	private Classes classes;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "student_id", nullable = false)
-	private User user;
+	@Column(name = "image_url", length = 100)
+	private String imageUrl;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "status_code", nullable = false)
-	private ReservationStatus status;
-
-	/**
-	 * 예약 상태 변경
-	 *
-	 * @param newStatus 새로운 예약 상태
-	 */
-	public void updateStatus(ReservationStatus newStatus) {
-		this.status = newStatus;
-	}
+	@Column(name = "is_representative")
+	private Boolean isRepresentative;
 }
+
