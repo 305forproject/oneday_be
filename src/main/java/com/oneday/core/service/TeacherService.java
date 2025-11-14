@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TeacherService {
 
+	// 예약 확정 상태 코드 (status_code = 1)
 	private static final int CONFIRMED_STATUS_ID = 1;
 	private final TimesRepository timesRepository;
 	private final ReservationRepository reservationRepository;
