@@ -131,5 +131,18 @@ class JwtTokenProviderTest {
             .extracting("authority")
             .contains("ROLE_USER");
     }
+
+    @Test
+    @DisplayName("Spring Security User로 생성한 토큰 - userId는 null")
+    void getUserIdFromToken_WithSpringSecurityUser() {
+        // given - Spring Security의 기본 User (userId 없음)
+        String token = jwtTokenProvider.generateAccessToken(userDetails);
+
+        // when
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+
+        // then
+        assertThat(userId).isNull();
+    }
 }
 
