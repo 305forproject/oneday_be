@@ -33,7 +33,7 @@ public class Categories {
 	@Column(name = "category_id")
 	private Integer categoryId;
 
-	@Column(name = "category", length = 100)
+	@Column(name = "category", length = 100, nullable = false)
 	private String category;
 }
 

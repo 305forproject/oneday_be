@@ -40,10 +40,11 @@ public class Images {
 	@JoinColumn(name = "class_id", nullable = false)
 	private Classes classes;
 
-	@Column(name = "image_url", length = 100)
+	@Column(name = "image_url", length = 100, nullable = false)
 	private String imageUrl;
 
-	@Column(name = "is_representative")
-	private Boolean isRepresentative;
+    @Builder.Default
+	@Column(name = "is_representative", nullable = false)
+	private Boolean isRepresentative = false;
 }
 

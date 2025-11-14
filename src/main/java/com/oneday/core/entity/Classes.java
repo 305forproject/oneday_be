@@ -44,7 +44,7 @@ public class Classes {
 	@JoinColumn(name = "category_id", nullable = false)
 	private Categories category;
 
-	@Column(name = "class_name", length = 50)
+	@Column(name = "class_name", length = 50, nullable = false)
 	private String className;
 
 	@Column(name = "class_detail", length = 255)
@@ -73,4 +73,7 @@ public class Classes {
 
 	@Column(name = "price")
 	private Integer price;
+
+    @Column(name = "zipcode")
+    private String zipcode;
 }

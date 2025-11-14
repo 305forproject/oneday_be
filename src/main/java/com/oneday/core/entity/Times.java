@@ -42,10 +42,10 @@ public class Times {
 	@JoinColumn(name = "class_id", nullable = false)
 	private Classes classes;
 
-	@Column(name = "start_at")
+	@Column(name = "start_at", nullable = false)
 	private LocalDateTime startAt;
 
-	@Column(name = "end_at")
+	@Column(name = "end_at", nullable = false)
 	private LocalDateTime endAt;
 }
 
