@@ -29,6 +29,14 @@ public class ReservationService {
 	// 예약 확정 상태 번호
 	// 추후 정해지면 변경 할 수도 안 할 수도
 
+	/**
+	 * 예약 생성
+	 * 
+	 * @param timeId 예약할 강의 시간 ID
+	 * @param studentId 예약을 생성할 학생 ID
+	 * @return 생성된 예약 정보
+	 * @throws RuntimeException 사용자/시간/상태를 찾을 수 없거나, 중복 예약, 정원 초과 시 발생
+	 */
 	public Reservation createReservation(int timeId, long studentId) {
 
 		User targetUser = userRepository.findById(studentId)
