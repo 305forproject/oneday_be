@@ -235,7 +235,6 @@ public class User implements UserDetails {
 - ✅ 테이블명이 복수형인가? (예: `users`, `refresh_tokens`)
 - ✅ Enum이 `@Enumerated(EnumType.STRING)`으로 저장되는가? (ORDINAL 사용 금지)
 - ✅ ID 생성 전략이 `GenerationType.IDENTITY`인가?
-- ✅ `@PrePersist`, `@PreUpdate`로 타임스탬프를 자동 관리하는가?
 - ✅ Setter가 없고, 필요한 경우 비즈니스 메서드로 상태를 변경하는가?
 
 ### Repository 규칙
