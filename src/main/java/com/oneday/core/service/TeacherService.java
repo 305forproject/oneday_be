@@ -15,7 +15,9 @@ import com.oneday.core.repository.ReservationRepository;
 import com.oneday.core.repository.TimesRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TeacherService {
@@ -25,6 +27,12 @@ public class TeacherService {
 	private final TimesRepository timesRepository;
 	private final ReservationRepository reservationRepository;
 
+	/**
+	 * 강사의 전체 스케줄 조회 (예정/지난 수업 분리)
+	 *
+	 * @param teacherId 강사 ID
+	 * @return 예정된 스케줄과 지난 스케줄로 분리된 응답 DTO
+	 */
 	@Transactional(readOnly = true)
 	public TeacherScheduleResponseDto getTeacherSchedule(long teacherId) {
 
@@ -33,6 +41,7 @@ public class TeacherService {
 				teacherId);
 
 		if (allSchedules.isEmpty()) {
+			log.info("조회된 스케줄 없음: teacherId={}", teacherId);
 			// 빈 리스트라도 DTO 구조에 맞춰 반환
 			return new TeacherScheduleResponseDto(List.of(), List.of());
 		}
@@ -63,6 +72,11 @@ public class TeacherService {
 				.collect(Collectors.partitioningBy(
 						schedule -> schedule.getStartAt().isAfter(now)
 				));
+
+		log.info("강사 스케줄 조회 완료: teacherId={}, 예정={}, 지난={}",
+				teacherId,
+				partitionedSchedules.get(true).size(),
+				partitionedSchedules.get(false).size());
 
 		// 분리된 리스트를 새 DTO에 담아 반환
 		return new TeacherScheduleResponseDto(

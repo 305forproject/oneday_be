@@ -1,13 +1,15 @@
 package com.oneday.core.dto;
 
-import lombok.Getter;
-import lombok.AllArgsConstructor;
-
-@Getter
-@AllArgsConstructor
-public class EnrolledStudentDto {
-
-	private long studentId;
-	private String studentName;
-	private String studentEmail;
+/**
+ * 수강생 정보 DTO
+ *
+ * @param studentId 학생 ID
+ * @param studentName 학생 이름
+ * @param studentEmail 학생 이메일
+ */
+public record EnrolledStudentDto(
+		long studentId,
+		String studentName,
+		String studentEmail
+) {
 }
