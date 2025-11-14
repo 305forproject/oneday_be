@@ -1,11 +1,10 @@
 package com.oneday.core.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,13 +12,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.oneday.core.dto.EnrolledStudentDto;
-import com.oneday.core.dto.TeacherScheduleResponseDto;
+import com.oneday.core.dto.teacher.EnrolledStudentDto;
+import com.oneday.core.dto.teacher.TeacherScheduleResponseDto;
 import com.oneday.core.dto.common.ApiResponse;
 import com.oneday.core.exception.ErrorCode;
 import com.oneday.core.service.TeacherService;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
@@ -30,7 +29,7 @@ public class TeacherController {
 	private final TeacherService teacherService;
 
 	/**
-	 * 강사 본인의 예정된 스케줄 조회
+	 * 강사 본인의 예정된 스케줄을 조회
 	 * (예약 확정 학생 수가 포함된 DTO 리스트 반환)
 	 *
 	 * @param session HTTP 세션 (강사 인증 정보 포함)
@@ -75,6 +74,7 @@ public class TeacherController {
 		long teacherId = (Long)session.getAttribute("userId");
 
 		try {
+			// 서비스 호출 (강사 ID, 시간 ID 전달)
 			List<EnrolledStudentDto> students = teacherService.getEnrolledStudents(teacherId, timeId);
 			return ResponseEntity.ok(ApiResponse.success(students));
 		} catch (Exception e) {

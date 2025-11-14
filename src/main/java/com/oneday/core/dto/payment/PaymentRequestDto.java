@@ -1,4 +1,4 @@
-package com.oneday.core.dto;
+package com.oneday.core.dto.payment;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

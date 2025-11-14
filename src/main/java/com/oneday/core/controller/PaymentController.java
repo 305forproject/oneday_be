@@ -8,20 +8,18 @@ import java.util.Map;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.oneday.core.dto.PaymentRequestDto;
+import com.oneday.core.dto.payment.PaymentRequestDto;
 import com.oneday.core.entity.Payment;
 import com.oneday.core.service.PaymentService;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/payments")
 @RequiredArgsConstructor
 public class PaymentController {
 
-	private static final Logger log = LoggerFactory.getLogger(PaymentController.class);
 	private final PaymentService paymentService;
 
 	/**

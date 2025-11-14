@@ -8,9 +8,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.oneday.core.dto.EnrolledStudentDto;
-import com.oneday.core.dto.TeacherScheduleDto;
-import com.oneday.core.dto.TeacherScheduleResponseDto;
+import com.oneday.core.dto.teacher.EnrolledStudentDto;
+import com.oneday.core.dto.teacher.TeacherScheduleDto;
+import com.oneday.core.dto.teacher.TeacherScheduleResponseDto;
 import com.oneday.core.repository.ReservationRepository;
 import com.oneday.core.repository.TimesRepository;
 
