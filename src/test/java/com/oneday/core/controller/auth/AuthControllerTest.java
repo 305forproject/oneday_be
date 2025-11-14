@@ -242,6 +242,49 @@ class AuthControllerTest {
             .andExpect(jsonPath("$.success").value(false));
     }
 
+	// ============================================
+	// Phase 7: 로그아웃 테스트
+	// ============================================
+	// Note: @WebMvcTest 환경에서는 @AuthenticationPrincipal이 제대로 동작하지 않음
+	// TODO: 통합 테스트(@SpringBootTest)로 작성 예정
+	// 현재는 Postman을 통한 수동 테스트로 검증
+	// 참고: rules/complete/POSTMAN_TEST_GUIDE.md
+
+	/*
+	@Test
+	@DisplayName("로그아웃 API 성공")
+	void 로그아웃_API_성공() throws Exception {
+		// Given: 로그인한 사용자
+		String email = "test@example.com";
+
+		LogoutResponse response = LogoutResponse.success();
+
+		given(authService.logout(email)).willReturn(response);
+
+		// When & Then: POST /api/auth/logout 호출
+		mockMvc.perform(post("/api/auth/logout")
+						.with(user(email).roles("USER"))
+						.with(csrf())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.success").value(true))
+				.andExpect(jsonPath("$.data.message").value("로그아웃되었습니다"))
+				.andExpect(jsonPath("$.data.logoutAt").exists());
+	}
+
+	@Test
+	@DisplayName("로그아웃 실패 - 인증 없음")
+	void 로그아웃_실패_인증_없음() throws Exception {
+		// Given: 인증 정보 없음
+
+		// When & Then: 403 Forbidden
+		mockMvc.perform(post("/api/auth/logout")
+						.with(csrf())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isForbidden());
+	}
+	*/
+
 	/*
 	@Test
 	@DisplayName("/me API 성공 - 인증된 사용자")

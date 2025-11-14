@@ -46,3 +46,9 @@ application.properties
 application-*.properties
 application.yml
 application-*.yml
+
+
+### code rules ###
+/rules/plans
+/rules/reports
+/rules/prds

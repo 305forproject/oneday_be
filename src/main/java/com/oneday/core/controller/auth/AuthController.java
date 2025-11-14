@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.oneday.core.dto.auth.LoginRequest;
 import com.oneday.core.dto.auth.LoginResponse;
+import com.oneday.core.dto.auth.LogoutResponse;
 import com.oneday.core.dto.auth.SignUpRequest;
 import com.oneday.core.dto.auth.SignUpResponse;
 import com.oneday.core.dto.auth.TokenRefreshRequest;
@@ -78,8 +79,27 @@ public class AuthController {
 
         TokenRefreshResponse response = authService.refreshToken(request);
 
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
+		return ResponseEntity.ok(ApiResponse.success(response));
+	}
+
+	/**
+	 * 로그아웃 API
+	 * 인증된 사용자의 Refresh Token을 무효화합니다
+	 *
+	 * @param userDetails Spring Security가 자동 주입
+	 * @return 로그아웃 응답
+	 */
+	@PostMapping("/logout")
+	public ResponseEntity<ApiResponse<LogoutResponse>> logout(
+			@AuthenticationPrincipal UserDetails userDetails) {
+
+		String email = userDetails.getUsername();
+		log.info("로그아웃 API 호출: email={}", email);
+
+		LogoutResponse response = authService.logout(email);
+
+		return ResponseEntity.ok(ApiResponse.success(response));
+	}
 
     /**
      * JWT 인증 테스트용 헬스체크 API
