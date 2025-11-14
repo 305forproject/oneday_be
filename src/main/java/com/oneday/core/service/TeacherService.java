@@ -87,6 +87,10 @@ public class TeacherService {
 
 	/**
 	 * 특정 수업의 수강생 목록 조회
+	 *
+	 * @param teacherId 강사 ID
+	 * @param timeId 수업 시간 ID
+	 * @return 예약 확정된 수강생 목록
 	 */
 	@Transactional(readOnly = true)
 	public List<EnrolledStudentDto> getEnrolledStudents(long teacherId, int timeId) {
