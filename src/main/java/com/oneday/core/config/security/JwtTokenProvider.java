@@ -87,14 +87,21 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtProperties.getRefreshTokenExpiration());
 
+        // User 엔티티에서 userId 추출
+        Long userId = null;
+        if (userDetails instanceof com.oneday.core.entity.User) {
+            userId = ((com.oneday.core.entity.User) userDetails).getId();
+        }
+
         String token = Jwts.builder()
             .setSubject(userDetails.getUsername())
+            .claim("userId", userId)  // userId 클레임 추가
             .setIssuedAt(now)
             .setExpiration(expiryDate)
             .signWith(getSigningKey())
             .compact();
 
-        log.info("Refresh Token 생성 완료: email={}", userDetails.getUsername());
+        log.info("Refresh Token 생성 완료: email={}, userId={}", userDetails.getUsername(), userId);
         return token;
     }
 
@@ -198,6 +205,33 @@ public class JwtTokenProvider {
     public String getUserEmailFromToken(String token) {
         Claims claims = parseToken(token);
         return claims.getSubject();
+    }
+
+    /**
+     * JWT 토큰에서 User ID 추출
+     *
+     * @param token JWT 토큰
+     * @return User ID (없으면 null)
+     */
+    public Long getUserIdFromToken(String token) {
+        Claims claims = parseToken(token);
+        Object userIdClaim = claims.get("userId");
+
+        if (userIdClaim == null) {
+            log.debug("토큰에 userId 클레임이 없음");
+            return null;
+        }
+
+        // JJWT 라이브러리는 작은 숫자를 Integer로 파싱할 수 있음
+        // User ID가 Integer 범위 내일 때 Integer로 반환되므로 방어 코드 필요
+        if (userIdClaim instanceof Integer) {
+            return ((Integer) userIdClaim).longValue();
+        } else if (userIdClaim instanceof Long) {
+            return (Long) userIdClaim;
+        } else {
+            log.warn("userId 클레임 타입 오류: {}", userIdClaim.getClass());
+            return null;
+        }
     }
 
     /**
