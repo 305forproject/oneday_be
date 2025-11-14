@@ -34,7 +34,6 @@ public interface TimesRepository extends JpaRepository<Times, Integer> {
 			"FROM Reservation r " +
 			"JOIN r.time t " +
 			"WHERE r.status.statusCode = :confirmedStatusId " +
-			"AND t.startAt > :currentTime " +
 			"AND t.classes.teacher.id = :teacherId " +
 			"GROUP BY t.timeId")
 	List<Object[]> findAllConfirmedReservationCounts(
