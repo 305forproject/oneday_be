@@ -17,50 +17,52 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(
-		name = "refresh_tokens",
-		indexes = {
-				@Index(name = "idx_token", columnList = "token"),
-				@Index(name = "idx_user_id", columnList = "user_id")
-		}
+    name = "refresh_tokens",
+    indexes = {
+        @Index(name = "idx_token", columnList = "token"),
+        @Index(name = "idx_user_id", columnList = "user_id")
+    }
 )
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString(exclude = {"user"})
 public class RefreshToken {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(nullable = false, unique = true, length = 500)
-	private String token;
+    @Column(nullable = false, unique = true, length = 500)
+    private String token;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-	@Column(nullable = false)
-	private LocalDateTime expiresAt;
+    @Column(nullable = false)
+    private LocalDateTime expiresAt;
 
-	@Column(nullable = false, updatable = false)
-	private LocalDateTime createdAt;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-	@jakarta.persistence.PrePersist
-	protected void onCreate() {
-		this.createdAt = LocalDateTime.now();
-	}
+    @jakarta.persistence.PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 
-	public boolean isExpired() {
-		return LocalDateTime.now().isAfter(this.expiresAt);
-	}
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(this.expiresAt);
+    }
 
-	public void update(String newToken, LocalDateTime newExpiresAt) {
-		this.token = newToken;
-		this.expiresAt = newExpiresAt;
-	}
+    public void update(String newToken, LocalDateTime newExpiresAt) {
+        this.token = newToken;
+        this.expiresAt = newExpiresAt;
+    }
 }
 

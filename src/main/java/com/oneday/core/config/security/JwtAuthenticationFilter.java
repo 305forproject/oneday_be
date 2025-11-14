@@ -27,45 +27,45 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-	private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
 
-	@Override
-	protected void doFilterInternal(
-			HttpServletRequest request,
-			HttpServletResponse response,
-			FilterChain filterChain) throws ServletException, IOException {
+    @Override
+    protected void doFilterInternal(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        FilterChain filterChain) throws ServletException, IOException {
 
-		try {
-			String token = extractTokenFromRequest(request);
+        try {
+            String token = extractTokenFromRequest(request);
 
-			if (token != null) {
-				jwtTokenProvider.validateTokenWithException(token);
-				Authentication authentication = jwtTokenProvider.getAuthentication(token);
-				SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (token != null) {
+                jwtTokenProvider.validateTokenWithException(token);
+                Authentication authentication = jwtTokenProvider.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-				log.debug("JWT 인증 성공: user={}", authentication.getName());
-			}
-		} catch (Exception e) {
-			log.warn("JWT 인증 실패: {}", e.getMessage());
-		}
+                log.debug("JWT 인증 성공: user={}", authentication.getName());
+            }
+        } catch (Exception e) {
+            log.warn("JWT 인증 실패: {}", e.getMessage());
+        }
 
-		filterChain.doFilter(request, response);
-	}
+        filterChain.doFilter(request, response);
+    }
 
-	/**
-	 * Authorization 헤더에서 Bearer 토큰 추출
-	 *
-	 * @param request HTTP 요청
-	 * @return JWT 토큰 (없으면 null)
-	 */
-	private String extractTokenFromRequest(HttpServletRequest request) {
-		String bearerToken = request.getHeader("Authorization");
+    /**
+     * Authorization 헤더에서 Bearer 토큰 추출
+     *
+     * @param request HTTP 요청
+     * @return JWT 토큰 (없으면 null)
+     */
+    private String extractTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
 
-		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-			return bearerToken.substring(7);
-		}
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
 
-		return null;
-	}
+        return null;
+    }
 }
 

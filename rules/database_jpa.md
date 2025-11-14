@@ -273,6 +273,7 @@ private String order;
 ```
 
 **application.yml 설정 필수**:
+
 ```yaml
 spring:
   jpa:

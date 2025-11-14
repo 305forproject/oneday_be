@@ -28,98 +28,93 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-	/**
-	 * 커스텀 예외 처리
-	 * 비즈니스 로직에서 발생하는 예외를 처리
-	 */
-	@ExceptionHandler(CustomException.class)
-	public ResponseEntity<ApiResponse<Void>> handleCustomException(CustomException e) {
-		log.error("CustomException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
+    /**
+     * 커스텀 예외 처리
+     * 비즈니스 로직에서 발생하는 예외를 처리
+     */
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<ApiResponse<Void>> handleCustomException(CustomException e) {
+        log.error("CustomException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
 
-		ErrorCode errorCode = e.getErrorCode();
+        ErrorCode errorCode = e.getErrorCode();
 
-		return ResponseEntity
-				.status(errorCode.getStatus())
-				.body(ApiResponse.error(errorCode, e.getMessage()));
-	}
+        return ResponseEntity
+            .status(errorCode.getStatus())
+            .body(ApiResponse.error(errorCode, e.getMessage()));
+    }
 
-	/**
-	 * Spring Security 인증 예외 처리
-	 * 인증 실패 시 발생하는 예외를 처리
-	 */
-	@ExceptionHandler(AuthenticationException.class)
-	public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(AuthenticationException e) {
-		log.error("AuthenticationException: {}", e.getMessage());
+    /**
+     * Spring Security 인증 예외 처리
+     * 인증 실패 시 발생하는 예외를 처리
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(AuthenticationException e) {
+        log.error("AuthenticationException: {}", e.getMessage());
 
-		return ResponseEntity
-				.status(HttpStatus.UNAUTHORIZED)
-				.body(ApiResponse.error(ErrorCode.UNAUTHORIZED));
-	}
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ApiResponse.error(ErrorCode.UNAUTHORIZED));
+    }
 
-	/**
-	 * Spring Security 권한 예외 처리
-	 * 권한 부족 시 발생하는 예외를 처리
-	 */
-	@ExceptionHandler(AccessDeniedException.class)
-	public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(AccessDeniedException e) {
-		log.error("AccessDeniedException: {}", e.getMessage());
+    /**
+     * Spring Security 권한 예외 처리
+     * 권한 부족 시 발생하는 예외를 처리
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(AccessDeniedException e) {
+        log.error("AccessDeniedException: {}", e.getMessage());
 
-		return ResponseEntity
-				.status(HttpStatus.FORBIDDEN)
-				.body(ApiResponse.error(ErrorCode.FORBIDDEN));
-	}
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(ApiResponse.error(ErrorCode.FORBIDDEN));
+    }
 
-	/**
-	 * 유효성 검증 실패 예외 처리
-	 * Valid 어노테이션으로 검증 실패 시 발생
-	 */
-	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationException(
-			MethodArgumentNotValidException e) {
+    /**
+     * 유효성 검증 실패 예외 처리
+     * Valid 어노테이션으로 검증 실패 시 발생
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationException(
+        MethodArgumentNotValidException e) {
 
-		log.warn("Validation failed");
+        log.warn("Validation failed");
 
-		Map<String, String> errors = new HashMap<>();
-		e.getBindingResult().getAllErrors().forEach(error -> {
-			String fieldName = ((FieldError)error).getField();
-			String errorMessage = error.getDefaultMessage();
-			errors.put(fieldName, errorMessage);
-		});
+        Map<String, String> errors = new HashMap<>();
+        e.getBindingResult().getAllErrors().forEach(error -> {
+            String fieldName = ((FieldError)error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
 
-		return ResponseEntity
-				.status(HttpStatus.BAD_REQUEST)
-				.body(ApiResponse.error(ErrorCode.INVALID_INPUT, errors));
-	}
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error(ErrorCode.INVALID_INPUT, errors));
+    }
 
-	/**
-	 * Refresh Token 예외 처리
-	 * 유효하지 않거나 만료된 Refresh Token 예외를 처리
-	 */
-	@ExceptionHandler(InvalidRefreshTokenException.class)
-	public ResponseEntity<ApiResponse<Void>> handleInvalidRefreshToken(
-			InvalidRefreshTokenException ex) {
+    /**
+     * Refresh Token 예외 처리
+     * 유효하지 않거나 만료된 Refresh Token 예외를 처리
+     */
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidRefreshToken(
+        InvalidRefreshTokenException ex) {
 
-		ApiResponse.ErrorResponse error = new ApiResponse.ErrorResponse(
-				"AUTH006",
-				ex.getMessage()
-		);
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ApiResponse.error(ErrorCode.INVALID_REFRESH_TOKEN, ex.getMessage()));
+    }
 
-		return ResponseEntity
-				.status(HttpStatus.UNAUTHORIZED)
-				.body(ApiResponse.error(error));
-	}
+    /**
+     * 그 외 모든 예외 처리
+     * 예상하지 못한 예외를 처리하여 서버 정보 노출 방지
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
+        log.error("Unexpected error occurred", e);
 
-	/**
-	 * 그 외 모든 예외 처리
-	 * 예상하지 못한 예외를 처리하여 서버 정보 노출 방지
-	 */
-	@ExceptionHandler(Exception.class)
-	public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
-		log.error("Unexpected error occurred", e);
-
-		return ResponseEntity
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
-	}
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
+    }
 }
 

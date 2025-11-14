@@ -1,8 +1,10 @@
 package com.oneday.core.config.security;
 
-import com.oneday.core.entity.Role;
-import com.oneday.core.entity.User;
-import com.oneday.core.repository.user.UserRepository;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,10 +15,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import com.oneday.core.entity.Role;
+import com.oneday.core.entity.User;
+import com.oneday.core.repository.user.UserRepository;
 
 /**
  * CustomUserDetailsService 테스트

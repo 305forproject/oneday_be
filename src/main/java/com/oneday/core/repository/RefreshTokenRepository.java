@@ -12,9 +12,9 @@ import com.oneday.core.entity.User;
 @Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
 
-	Optional<RefreshToken> findByToken(String token);
+    Optional<RefreshToken> findByToken(String token);
 
-	Optional<RefreshToken> findByUser(User user);
+    Optional<RefreshToken> findByUser(User user);
 
 	void deleteByExpiresAtBefore(LocalDateTime dateTime);
 

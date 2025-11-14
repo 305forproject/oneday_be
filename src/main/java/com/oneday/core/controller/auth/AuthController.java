@@ -30,54 +30,54 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AuthController {
 
-	private final AuthService authService;
+    private final AuthService authService;
 
-	/**
-	 * 회원가입 API
-	 * @param request 회원가입 요청 정보
-	 * @return 생성된 사용자 정보
-	 */
-	@PostMapping("/signup")
-	public ResponseEntity<ApiResponse<SignUpResponse>> signUp(
-			@Valid @RequestBody SignUpRequest request) {
+    /**
+     * 회원가입 API
+     * @param request 회원가입 요청 정보
+     * @return 생성된 사용자 정보
+     */
+    @PostMapping("/signup")
+    public ResponseEntity<ApiResponse<SignUpResponse>> signUp(
+        @Valid @RequestBody SignUpRequest request) {
 
-		log.info("회원가입 API 호출: email={}", request.email());
+        log.info("회원가입 API 호출: email={}", request.email());
 
-		SignUpResponse response = authService.signUp(request);
+        SignUpResponse response = authService.signUp(request);
 
-		return ResponseEntity
-				.status(HttpStatus.CREATED)
-				.body(ApiResponse.success(response));
-	}
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(ApiResponse.success(response));
+    }
 
-	/**
-	 * 로그인 API
-	 * @param request 로그인 요청 정보 (이메일, 비밀번호)
-	 * @return JWT 토큰 (Access Token, Refresh Token)
-	 */
-	@PostMapping("/login")
-	public ResponseEntity<ApiResponse<LoginResponse>> login(
-			@Valid @RequestBody LoginRequest request) {
+    /**
+     * 로그인 API
+     * @param request 로그인 요청 정보 (이메일, 비밀번호)
+     * @return JWT 토큰 (Access Token, Refresh Token)
+     */
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<LoginResponse>> login(
+        @Valid @RequestBody LoginRequest request) {
 
-		log.info("로그인 API 호출: email={}", request.email());
+        log.info("로그인 API 호출: email={}", request.email());
 
-		LoginResponse response = authService.login(request);
+        LoginResponse response = authService.login(request);
 
-		return ResponseEntity.ok(ApiResponse.success(response));
-	}
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 
-	/**
-	 * Refresh Token으로 Access Token 갱신 API
-	 * @param request Refresh Token 요청
-	 * @return 새로운 Access Token과 Refresh Token
-	 */
-	@PostMapping("/refresh")
-	public ResponseEntity<ApiResponse<TokenRefreshResponse>> refreshToken(
-			@Valid @RequestBody TokenRefreshRequest request) {
+    /**
+     * Refresh Token으로 Access Token 갱신 API
+     * @param request Refresh Token 요청
+     * @return 새로운 Access Token과 Refresh Token
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenRefreshResponse>> refreshToken(
+        @Valid @RequestBody TokenRefreshRequest request) {
 
-		log.info("토큰 갱신 API 호출");
+        log.info("토큰 갱신 API 호출");
 
-		TokenRefreshResponse response = authService.refreshToken(request);
+        TokenRefreshResponse response = authService.refreshToken(request);
 
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
@@ -101,21 +101,21 @@ public class AuthController {
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 
-	/**
-	 * JWT 인증 테스트용 헬스체크 API
-	 * 인증된 사용자의 이메일을 반환
-	 * @param userDetails Spring Security가 자동 주입
-	 * @return 인증된 사용자 이메일
-	 */
-	@GetMapping("/me")
-	public ResponseEntity<ApiResponse<String>> getAuthenticatedUser(
-			@AuthenticationPrincipal UserDetails userDetails) {
+    /**
+     * JWT 인증 테스트용 헬스체크 API
+     * 인증된 사용자의 이메일을 반환
+     * @param userDetails Spring Security가 자동 주입
+     * @return 인증된 사용자 이메일
+     */
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<String>> getAuthenticatedUser(
+        @AuthenticationPrincipal UserDetails userDetails) {
 
-		log.info("인증 확인 API 호출: email={}", userDetails.getUsername());
+        log.info("인증 확인 API 호출: email={}", userDetails.getUsername());
 
-		return ResponseEntity.ok(
-				ApiResponse.success("Authenticated as: " + userDetails.getUsername())
-		);
-	}
+        return ResponseEntity.ok(
+            ApiResponse.success("Authenticated as: " + userDetails.getUsername())
+        );
+    }
 }
 

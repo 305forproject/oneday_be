@@ -26,62 +26,62 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-	/**
-	 * PasswordEncoder Bean 등록
-	 * BCrypt 해시 함수를 사용하여 비밀번호 암호화
-	 *
-	 * @return BCryptPasswordEncoder
-	 */
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+    /**
+     * PasswordEncoder Bean 등록
+     * BCrypt 해시 함수를 사용하여 비밀번호 암호화
+     *
+     * @return BCryptPasswordEncoder
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-	/**
-	 * Security Filter Chain 설정
-	 *
-	 * @param http HttpSecurity
-	 * @return SecurityFilterChain
-	 * @throws Exception 설정 중 발생할 수 있는 예외
-	 */
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http
-				// CSRF 비활성화 (JWT 사용)
-				.csrf(AbstractHttpConfigurer::disable)
+    /**
+     * Security Filter Chain 설정
+     *
+     * @param http HttpSecurity
+     * @return SecurityFilterChain
+     * @throws Exception 설정 중 발생할 수 있는 예외
+     */
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            // CSRF 비활성화 (JWT 사용)
+            .csrf(AbstractHttpConfigurer::disable)
 
-				// 세션 사용하지 않음 (JWT 기반 인증)
-				.sessionManagement(session ->
-						session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // 세션 사용하지 않음 (JWT 기반 인증)
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-				// 요청 권한 설정
-				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh")
-						.permitAll()  // 회원가입, 로그인, 토큰 갱신은 인증 불필요
-						.requestMatchers("/api/auth/me")
-						.authenticated()
-						.anyRequest()
-						.authenticated()  // 그 외 요청은 인증 필요
-				)
+            // 요청 권한 설정
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh")
+                .permitAll()  // 회원가입, 로그인, 토큰 갱신은 인증 불필요
+                .requestMatchers("/api/auth/me")
+                .authenticated()
+                .anyRequest()
+                .authenticated()  // 그 외 요청은 인증 필요
+            )
 
-				// JWT 인증 필터 추가
-				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            // JWT 인증 필터 추가
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-		return http.build();
-	}
+        return http.build();
+    }
 
-	/**
-	 * AuthenticationManager Bean 등록
-	 *
-	 * @param config AuthenticationConfiguration
-	 * @return AuthenticationManager
-	 * @throws Exception 설정 중 발생할 수 있는 예외
-	 */
-	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-		return config.getAuthenticationManager();
-	}
+    /**
+     * AuthenticationManager Bean 등록
+     *
+     * @param config AuthenticationConfiguration
+     * @return AuthenticationManager
+     * @throws Exception 설정 중 발생할 수 있는 예외
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 }
 

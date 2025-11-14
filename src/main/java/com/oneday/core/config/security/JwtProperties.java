@@ -1,9 +1,10 @@
 package com.oneday.core.config.security;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * JWT 설정 프로퍼티
