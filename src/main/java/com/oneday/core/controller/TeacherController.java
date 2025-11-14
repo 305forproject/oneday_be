@@ -5,8 +5,7 @@ import java.util.Map;
 
 import jakarta.servlet.http.HttpSession;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,12 +19,12 @@ import com.oneday.core.service.TeacherService;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/teachers")
 @RequiredArgsConstructor
 public class TeacherController {
 
-	private static final Logger log = LoggerFactory.getLogger(TeacherController.class);
 	private final TeacherService teacherService;
 
 	/**
