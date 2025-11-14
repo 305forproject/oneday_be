@@ -51,4 +51,4 @@ application-*.yml
 ### code rules ###
 /rules/plans
 /rules/reports
-/rules/prds
+#/rules/prds
