@@ -1,25 +1,34 @@
 package com.oneday.core.entity;
 
-import lombok.AccessLevel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import java.time.LocalDateTime;
-
+/**
+ * 클래스 정보 엔티티
+ *
+ * @author zionge2k
+ * @since 2025-01-26
+ */
 @Entity
 @Table(name = "classes")
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@ToString(exclude = {"teacher", "category"})
 public class Classes {
 
 	@Id
@@ -27,39 +36,44 @@ public class Classes {
 	@Column(name = "class_id")
 	private Integer classId;
 
-	@Column(name = "teacher_id")
-	private Integer teacherId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "teacher_id", nullable = false)
+	private User teacher;
 
-	@Column(name = "category_id")
-	private Integer categoryId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "category_id", nullable = false)
+	private Categories category;
 
-	@Column(name = "class_name")
+	@Column(name = "class_name", length = 50, nullable = false)
 	private String className;
 
-	@Column(name = "class_detail")
+	@Column(name = "class_detail", length = 255)
 	private String classDetail;
 
-	@Column(name = "start_at")
-	private LocalDateTime startAt;
+	@Column(name = "curriculum", length = 255)
+	private String curriculum;
 
-	@Column(name = "end_at")
-	private LocalDateTime endAt;
+	@Column(name = "included", length = 255)
+	private String included;
 
-	@Column(name = "longitude")
+	@Column(name = "required", length = 255)
+	private String required;
+
+	@Column(name = "longitude", length = 20)
 	private String longitude;
 
-	@Column(name = "latitude")
+	@Column(name = "latitude", length = 20)
 	private String latitude;
 
-	@Column(name = "location")
+	@Column(name = "location", length = 255)
 	private String location;
-
-	@Column(name = "zipcode")
-	private String zipcode;
 
 	@Column(name = "max_capacity")
 	private Integer maxCapacity;
 
 	@Column(name = "price")
 	private Integer price;
+
+    @Column(name = "zipcode")
+    private String zipcode;
 }
