@@ -1,15 +1,19 @@
 package com.oneday.core.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.oneday.core.dto.ReservationRequestDto;
-import com.oneday.core.entity.Classes;
+import com.oneday.core.dto.student.StudentReservationDto;
+import com.oneday.core.dto.student.StudentScheduleResponseDto;
 import com.oneday.core.entity.Reservation;
 import com.oneday.core.entity.ReservationStatus;
 import com.oneday.core.entity.Times;
 import com.oneday.core.entity.User;
-import com.oneday.core.repository.ClassRepository;
 import com.oneday.core.repository.ReservationRepository;
 import com.oneday.core.repository.ReservationStatusRepository;
 import com.oneday.core.repository.TimesRepository;
@@ -31,8 +35,8 @@ public class ReservationService {
 
 	/**
 	 * 예약 생성
-	 * 
-	 * @param timeId 예약할 강의 시간 ID
+	 *
+	 * @param timeId    예약할 강의 시간 ID
 	 * @param studentId 예약을 생성할 학생 ID
 	 * @return 생성된 예약 정보
 	 * @throws RuntimeException 사용자/시간/상태를 찾을 수 없거나, 중복 예약, 정원 초과 시 발생
@@ -110,5 +114,35 @@ public class ReservationService {
 		// 자동으로 UPDATE 쿼리 실행 (save 호출 불필요)
 
 		return reservation;
+	}
+
+	/**
+	 * 학생의 '내 예약 목록'을 '예정된'/'지난'으로 분리하여 조회
+	 */
+	@Transactional(readOnly = true)
+	public StudentScheduleResponseDto getMyReservations(long studentId) {
+
+		// 학생의 모든 예약 정보를 조회
+		List<StudentReservationDto> allReservations =
+				reservationRepository.findMyReservationsByStudentId(studentId);
+
+		if (allReservations.isEmpty()) {
+			return new StudentScheduleResponseDto(List.of(), List.of());
+		}
+
+		// 현재 시간 기준으로 '예정'/'지난' 수업 분리
+		LocalDateTime now = LocalDateTime.now();
+
+		Map<Boolean, List<StudentReservationDto>> partitionedSchedules =
+				allReservations.stream()
+						.collect(Collectors.partitioningBy(
+								schedule -> schedule.getStartAt().isAfter(now)
+						));
+
+		// 3. 분리된 리스트를 DTO에 담아 반환
+		return new StudentScheduleResponseDto(
+				partitionedSchedules.get(true),  // upcomingSchedules
+				partitionedSchedules.get(false) // pastSchedules
+		);
 	}
 }
