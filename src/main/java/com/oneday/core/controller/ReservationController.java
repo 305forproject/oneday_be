@@ -37,7 +37,7 @@ public class ReservationController {
 
 		try {
 			Reservation createdReservation = reservationService.createReservation(
-					reservationDto.getClassId(),
+					reservationDto.getTimeId(),
 					studentId
 			);
 			return ResponseEntity.status(HttpStatus.CREATED).body(createdReservation);
