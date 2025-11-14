@@ -42,7 +42,7 @@ public class PaymentController {
 
 		try {
 			Payment completedPayment = paymentService.createReservationAndPayment(
-					paymentDto.getClassId(),
+					paymentDto.getTimeId(),
 					studentId,
 					paymentDto.getTossResponse()
 			);

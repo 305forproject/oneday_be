@@ -25,9 +25,9 @@ public class PaymentService {
 	 * 결제 승인 후, 예약 생성과 결제 정보 저장을 동시 처리
 	 */
 	@Transactional
-	public Payment createReservationAndPayment(int classId, long studentId, Map<String, Object> tossResponse) {
+	public Payment createReservationAndPayment(int timeId, long studentId, Map<String, Object> tossResponse) {
 
-		Reservation savedReservation = reservationService.createReservation(classId, studentId);
+		Reservation savedReservation = reservationService.createReservation(timeId, studentId);
 		// 결제 정보 저장
 		DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 

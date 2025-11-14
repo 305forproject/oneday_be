@@ -7,10 +7,12 @@ import com.oneday.core.dto.ReservationRequestDto;
 import com.oneday.core.entity.Classes;
 import com.oneday.core.entity.Reservation;
 import com.oneday.core.entity.ReservationStatus;
+import com.oneday.core.entity.Times;
 import com.oneday.core.entity.User;
 import com.oneday.core.repository.ClassRepository;
 import com.oneday.core.repository.ReservationRepository;
 import com.oneday.core.repository.ReservationStatusRepository;
+import com.oneday.core.repository.TimesRepository;
 import com.oneday.core.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -21,33 +23,33 @@ public class ReservationService {
 	private static final Integer CONFIRMED = 1; // "예약 확정"
 	private static final Integer CANCELLED = 2; // "예약 취소"
 	private final ReservationRepository reservationRepository;
-	private final ClassRepository classRepository;
+	private final TimesRepository timesRepository;
 	private final ReservationStatusRepository reservationStatusRepository;
 	private final UserRepository userRepository;
 	// 예약 확정 상태 번호
 	// 추후 정해지면 변경 할 수도 안 할 수도
 
-	public Reservation createReservation(int classId, long studentId) {
+	public Reservation createReservation(int timeId, long studentId) {
 
 		User targetUser = userRepository.findById(studentId)
 				.orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
 
-		Classes targetClass = classRepository.findById(classId)
-				.orElseThrow(() -> new RuntimeException("존재하지 않는 강의입니다."));
+		Times targetTime = timesRepository.findById(timeId)
+				.orElseThrow(() -> new RuntimeException("존재하지 않는 강의 시간입니다."));
 
-		if ((reservationRepository.existsByUser_IdAndClasses_ClassIdAndStatus_StatusCode(
+		if ((reservationRepository.existsByUser_IdAndTime_TimeIdAndStatus_StatusCode(
 				studentId,
-				classId,
+				timeId,
 				CONFIRMED))) {
 			throw new RuntimeException("이미 예약한 강의입니다.");
 		}
 
-		long currentCount = reservationRepository.countByClasses_ClassIdAndStatus_StatusCode(
-				classId,
+		long currentCount = reservationRepository.countByTime_TimeIdAndStatus_StatusCode(
+				timeId,
 				CONFIRMED
 		);
 
-		if (currentCount >= targetClass.getMaxCapacity()) {
+		if (currentCount >= targetTime.getClasses().getMaxCapacity()) {
 			throw new RuntimeException("정원이 모두 마감되었습니다.");
 		}
 
@@ -56,7 +58,7 @@ public class ReservationService {
 
 		Reservation newReservation = Reservation.builder()
 				.user(targetUser)
-				.classes(targetClass)
+				.time(targetTime)
 				.status(confirmedStatus)
 				.build();
 

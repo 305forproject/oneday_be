@@ -4,5 +4,5 @@ import lombok.Getter;
 
 @Getter
 public class ReservationRequestDto {
-	private int classId;
+	private int timeId;
 }

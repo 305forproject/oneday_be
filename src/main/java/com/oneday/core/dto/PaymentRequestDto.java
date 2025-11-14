@@ -11,7 +11,7 @@ public class PaymentRequestDto {
 
 	@NotNull
 	@Positive
-	private int classId;
+	private int timeId;
 
 	@NotNull
 	private Map<String, Object> tossResponse;

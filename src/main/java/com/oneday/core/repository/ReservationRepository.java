@@ -11,14 +11,14 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Integer> {
 
-	boolean existsByUser_IdAndClasses_ClassIdAndStatus_StatusCode(
-		long studentId,
-		Integer classId,
-		Integer statusCode
+	boolean existsByUser_IdAndTime_TimeIdAndStatus_StatusCode(
+			long studentId,
+			Integer timeId,
+			Integer statusCode
 	);
 
-	long countByClasses_ClassIdAndStatus_StatusCode(
-        Integer classId,
-        Integer statusCode
-    );
+	long countByTime_TimeIdAndStatus_StatusCode(
+			Integer timeId,
+			Integer statusCode
+	);
 }
