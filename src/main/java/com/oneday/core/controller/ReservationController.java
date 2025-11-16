@@ -84,7 +84,7 @@ public class ReservationController {
 	 * 학생 본인의 예약 목록 조회
 	 */
 	@GetMapping("/my")
-	public ResponseEntity<ApiResponse<?>> getMyReservations(HttpSession session) {
+	public ResponseEntity<ApiResponse<StudentScheduleResponseDto>> getMyReservations(HttpSession session) {
 
 		// if (session == null || session.getAttribute("userId") == null) {
 		// 	return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
