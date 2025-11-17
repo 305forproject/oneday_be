@@ -63,8 +63,12 @@ public class ClassService {
 	 */
 	public List<ClassMainResponseDto> searchClasses(String keyword) {
 
-		// 키워드로 클래스 목록 조회
-		List<Classes> searchResults = classRepository.searchByKeyword(keyword);
+		log.info("클래스 검색 시도: keyword={}", keyword);
+        
+        // 키워드로 클래스 목록 조회
+        List<Classes> searchResults = classRepository.searchByKeyword(keyword);
+        
+        log.info("클래스 검색 완료: 검색 결과 {}건", searchResults.size());
 
 		if (searchResults.isEmpty()) {
 			return Collections.emptyList();
