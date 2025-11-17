@@ -2,7 +2,6 @@ package com.oneday.core.controller;
 
 import java.util.List;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.oneday.core.config.security.UserPrincipal;
 import com.oneday.core.dto.teacher.EnrolledStudentDto;
 import com.oneday.core.dto.teacher.TeacherScheduleResponseDto;
 import com.oneday.core.dto.common.ApiResponse;
@@ -32,18 +32,19 @@ public class TeacherController {
 	/**
 	 * 강사 본인의 예정된 스케줄을 조회
 	 * (예약 확정 학생 수가 포함된 DTO 리스트 반환)
-	 * @param authenticationprincipal 인증된 사용자 정보
+	 * @param principal 인증된 사용자 정보
 	 * @return 예정/지난 스케줄 정보
 	 */
 	@GetMapping("/my-schedule")
 	public ResponseEntity<ApiResponse<TeacherScheduleResponseDto>> getMyTeachingSchedule(
-			@AuthenticationPrincipal Long teacherId) {
+			@AuthenticationPrincipal UserPrincipal principal) {
 
-		if (teacherId == null) {
+		if (principal == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body(ApiResponse.error(ErrorCode.UNAUTHORIZED));
 		}
 
+		long teacherId = principal.getId();
 		log.info("인증된 사용자 ID: {}", teacherId);
 
 		try {
@@ -58,20 +59,21 @@ public class TeacherController {
 
 	/**
 	 * 내 스케줄의 특정 수업(timeId)에 등록된 학생 목록을 조회
-	 * @param teacherId 조회할 강사의 ID
+	 * @param principal 조회할 강사의 ID
 	 * @param timeId 조회할 수업시간의 ID
 	 * @return 등록된 학생 목록
 	 */
 	@GetMapping("/schedule/{timeId}/students")
 	public ResponseEntity<ApiResponse<List<EnrolledStudentDto>>> getEnrolledStudentsForTime(
 			@PathVariable int timeId,
-			@AuthenticationPrincipal Long teacherId) {
+			@AuthenticationPrincipal UserPrincipal principal) {
 
-		if (teacherId == null) {
+		if (principal == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body(ApiResponse.error(ErrorCode.UNAUTHORIZED));
 		}
 
+		long teacherId = principal.getId();
 		log.info("인증된 사용자 ID: {}", teacherId);
 
 		try {

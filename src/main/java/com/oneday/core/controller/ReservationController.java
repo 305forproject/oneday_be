@@ -1,6 +1,5 @@
 package com.oneday.core.controller;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.oneday.core.config.security.UserPrincipal;
 import com.oneday.core.dto.common.ApiResponse;
 import com.oneday.core.dto.reservation.ReservationRequestDto;
 import com.oneday.core.dto.student.StudentScheduleResponseDto;
@@ -35,19 +35,20 @@ public class ReservationController {
 	/**
 	 * 예약 생성
 	 * @param reservationDto 예약 정보
-	 * @param authenticationprincipal 인증된 사용자 정보
+	 * @param principal 인증된 사용자 정보
 	 * @return 생성된 예약
 	 */
 	@PostMapping
 	public ResponseEntity<ApiResponse<Reservation>> createReservation(
 			@RequestBody ReservationRequestDto reservationDto,
-			@AuthenticationPrincipal Long studentId) {
+			@AuthenticationPrincipal UserPrincipal principal) {
 
-		if (studentId == null) {
+		if (principal == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body(ApiResponse.error(ErrorCode.UNAUTHORIZED));
 		}
 
+		long studentId = principal.getId();
 		log.info("인증된 사용자 ID: {}", studentId);
 
 		try {
@@ -73,18 +74,19 @@ public class ReservationController {
 	 * 예약 취소
 	 *
 	 * @param reservationId 취소할 예약의 ID
-	 * @param authenticationprincipal 인증된 사용자 정보
+	 * @param principal 인증된 사용자 정보
 	 */
 	@PatchMapping("/{reservationId}/cancel")
 	public ResponseEntity<ApiResponse<Reservation>> cancelReservation(
 			@PathVariable int reservationId,
-			@AuthenticationPrincipal Long studentId) {
+			@AuthenticationPrincipal UserPrincipal principal) {
 
-		if (studentId == null) {
+		if (principal == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body(ApiResponse.error(ErrorCode.UNAUTHORIZED));
 		}
 
+		long studentId = principal.getId();
 		log.info("인증된 사용자 ID: {}", studentId);
 
 		try {
@@ -106,19 +108,19 @@ public class ReservationController {
 	/**
  	* 학생 본인의 예약 목록 조회
  	*
-	* @param authenticationprincipal 인증된 사용자 정보
+	* @param principal 인증된 사용자 정보
  	* @return 예정된 예약과 지난 예약이 포함된 응답
  	*/
 	@GetMapping("/my")
-	public ResponseEntity<ApiResponse<StudentScheduleResponseDto>> getMyReservations(@AuthenticationPrincipal Long studentId) {
+	public ResponseEntity<ApiResponse<StudentScheduleResponseDto>> getMyReservations(@AuthenticationPrincipal UserPrincipal principal) {
 
-		if (studentId == null) {
+		if (principal == null) {
 			ErrorCode unauthorizedError = ErrorCode.UNAUTHORIZED;
 
 			return ResponseEntity.status(unauthorizedError.getStatus())
 					.body(ApiResponse.error(unauthorizedError));
 		}
-
+		long studentId = principal.getId();
 		log.info("인증된 사용자 ID: {}", studentId);
 
 		try {

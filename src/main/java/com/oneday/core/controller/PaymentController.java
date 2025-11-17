@@ -5,12 +5,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import com.oneday.core.config.security.UserPrincipal;
 import com.oneday.core.dto.common.ApiResponse;
 import com.oneday.core.dto.payment.PaymentRequestDto;
 import com.oneday.core.entity.Payment;
@@ -29,20 +27,21 @@ public class PaymentController {
 	/**
 	 * 클라이언트에서 토스 결제 승인이 완료된 후,
 	 * 최종 예약 및 결제 정보 저장을 요청하는 엔드포인트
-	 * @param authenticationprincipal 인증된 사용자 정보
-	 * @param PaymentRequestDto 결제 요청 정보
+	 * @param principal 인증된 사용자 정보
+	 * @param paymentDto 결제 요청 정보
 	 * @return 결제 및 예약 정보
 	 */
 	@PostMapping("/complete")
 	public ResponseEntity<ApiResponse<Payment>> completePayment(
 			@RequestBody PaymentRequestDto paymentDto,
-			@AuthenticationPrincipal Long studentId) {
+			@AuthenticationPrincipal UserPrincipal principal) {
 
-		if (studentId == null) {
+		if (principal == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body(ApiResponse.error(ErrorCode.UNAUTHORIZED));
 		}
 
+		long studentId = principal.getId();
 		log.info("인증된 사용자 ID: {}", studentId);
 
 		try {
