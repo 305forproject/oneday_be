@@ -142,7 +142,7 @@ public class ReservationService {
 								schedule -> schedule.getStartAt().isAfter(now)
 						));
 
-		// 3. 분리된 리스트를 DTO에 담아 반환
+		// 분리된 리스트를 DTO에 담아 반환
 		return new StudentScheduleResponseDto(
 				partitionedSchedules.get(true),  // upcomingSchedules
 				partitionedSchedules.get(false) // pastSchedules
