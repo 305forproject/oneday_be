@@ -128,6 +128,7 @@ public class ReservationService {
 		// 학생의 모든 예약 정보를 조회
 		List<StudentReservationDto> allReservations =
 				reservationRepository.findMyReservationsByStudentId(studentId);
+		log.info("학생 예약 목록 조회 시작: studentId={}", studentId);
 
 		if (allReservations.isEmpty()) {
 			return new StudentScheduleResponseDto(List.of(), List.of());
