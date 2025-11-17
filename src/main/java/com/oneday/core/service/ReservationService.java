@@ -117,8 +117,11 @@ public class ReservationService {
 	}
 
 	/**
-	 * 학생의 '내 예약 목록'을 '예정된'/'지난'으로 분리하여 조회
-	 */
+ 	* 학생의 '내 예약 목록'을 '예정된'/'지난'으로 분리하여 조회
+ 	* 
+ 	* @param studentId 조회할 학생의 ID
+ 	* @return 예정된 예약 목록과 지난 예약 목록을 담은 응답 DTO
+ 	*/
 	@Transactional(readOnly = true)
 	public StudentScheduleResponseDto getMyReservations(long studentId) {
 
