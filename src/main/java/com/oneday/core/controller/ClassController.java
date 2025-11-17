@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import com.oneday.core.dto.classes.ClassMainResponseDto;
 import com.oneday.core.dto.common.ApiResponse;
 import com.oneday.core.entity.Classes;
 import com.oneday.core.exception.CustomException;
@@ -27,14 +28,14 @@ public class ClassController {
 	private final ClassService classService;
 
 	/**
-	 * 모든 클래스 조회
+	 * 메인 화면용 모든 클래스 조회 (DTO 반환)
 	 * @return 클래스 목록
 	 */
 	@GetMapping
-	public ResponseEntity<ApiResponse<List<Classes>>> getAllClasses() {
+	public ResponseEntity<ApiResponse<List<ClassMainResponseDto>>> getAllClasses() {
 		try {
-			List<Classes> classes = classService.getAllClasses();
-			return ResponseEntity.ok(ApiResponse.success(classes));
+			List<ClassMainResponseDto> responseDtos = classService.getAllClasses();
+			return ResponseEntity.ok(ApiResponse.success(responseDtos));
 
 		} catch (Exception e) {
 			log.error("모든 클래스 조회 중 예상치 못한 오류 발생", e);
