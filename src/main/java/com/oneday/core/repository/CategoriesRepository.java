@@ -1,5 +1,7 @@
 package com.oneday.core.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -24,5 +26,13 @@ public interface CategoriesRepository extends JpaRepository<Categories, Integer>
 	 * @return 존재 여부
 	 */
 	boolean existsByCategory(String category);
+
+	/**
+	 * 카테고리명으로 카테고리 조회
+	 *
+	 * @param category 카테고리명 (한글)
+	 * @return 카테고리 엔티티
+	 */
+	Optional<Categories> findByCategory(String category);
 }
 
