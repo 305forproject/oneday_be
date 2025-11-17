@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,7 @@ import com.oneday.core.dto.common.ApiResponse;
 import com.oneday.core.dto.reservation.ReservationRequestDto;
 import com.oneday.core.dto.student.StudentScheduleResponseDto;
 import com.oneday.core.entity.Reservation;
+import com.oneday.core.exception.CustomException;
 import com.oneday.core.exception.ErrorCode;
 import com.oneday.core.service.ReservationService;
 
@@ -30,24 +32,40 @@ import com.oneday.core.service.ReservationService;
 public class ReservationController {
 	private final ReservationService reservationService;
 
+	/**
+	 * 예약 생성
+	 * @param reservationDto 예약 정보
+	 * @param authenticationprincipal 인증된 사용자 정보
+	 * @return 생성된 예약
+	 */
 	@PostMapping
-	public ResponseEntity<?> createReservation(@RequestBody ReservationRequestDto reservationDto, HttpSession session) {
-		if (session == null || session.getAttribute("userId") == null) {
+	public ResponseEntity<ApiResponse<Reservation>> createReservation(
+			@RequestBody ReservationRequestDto reservationDto,
+			@AuthenticationPrincipal Long studentId) {
+
+		if (studentId == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(Map.of("message", "로그인이 필요합니다."));
+					.body(ApiResponse.error(ErrorCode.UNAUTHORIZED));
 		}
-		long studentId = (Long)session.getAttribute("userId");
+
+		log.info("인증된 사용자 ID: {}", studentId);
 
 		try {
 			Reservation createdReservation = reservationService.createReservation(
 					reservationDto.getTimeId(),
 					studentId
 			);
-			return ResponseEntity.status(HttpStatus.CREATED).body(createdReservation);
-		} catch (RuntimeException e) {
-			log.info("예약 생성 실패: {}", e.getMessage());
-			return ResponseEntity.badRequest()
-					.body(Map.of("message", e.getMessage()));
+			return ResponseEntity.status(HttpStatus.CREATED)
+					.body(ApiResponse.success(createdReservation));
+
+		} catch (CustomException e) {
+			log.warn("예약 생성 실패: {}", e.getMessage());
+			return ResponseEntity.status(e.getErrorCode().getStatus())
+					.body(ApiResponse.error(e.getErrorCode()));
+		} catch (Exception e) {
+			log.error("예약 생성 중 예상치 못한 오류 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
 		}
 	}
 
@@ -55,46 +73,53 @@ public class ReservationController {
 	 * 예약 취소
 	 *
 	 * @param reservationId 취소할 예약의 ID
+	 * @param authenticationprincipal 인증된 사용자 정보
 	 */
 	@PatchMapping("/{reservationId}/cancel")
-	public ResponseEntity<?> cancelReservation(
+	public ResponseEntity<ApiResponse<Reservation>> cancelReservation(
 			@PathVariable int reservationId,
-			HttpSession session) {
+			@AuthenticationPrincipal Long studentId) {
 
-		if (session == null || session.getAttribute("userId") == null) {
+		if (studentId == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(Map.of("message", "로그인이 필요합니다."));
+					.body(ApiResponse.error(ErrorCode.UNAUTHORIZED));
 		}
 
-		long studentId = (Long)session.getAttribute("userId");
+		log.info("인증된 사용자 ID: {}", studentId);
 
 		try {
 			Reservation cancelledReservation = reservationService.cancelReservation(reservationId, studentId);
-			return ResponseEntity.ok(cancelledReservation);
 
-		} catch (RuntimeException e) {
-			log.info("예약 취소 실패: {}", e.getMessage());
-			return ResponseEntity.badRequest()
-					.body(Map.of("message", e.getMessage()));
+			return ResponseEntity.ok(ApiResponse.success(cancelledReservation));
+
+		} catch (CustomException e) {
+			log.warn("예약 취소 실패: {}", e.getMessage());
+			return ResponseEntity.status(e.getErrorCode().getStatus())
+					.body(ApiResponse.error(e.getErrorCode()));
+		} catch (Exception e) {
+			log.error("예약 취소 중 예상치 못한 오류 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
 		}
 	}
 
 	/**
  	* 학생 본인의 예약 목록 조회
- 	* 
-	* @param session HTTP 세션 (학생 인증 정보 포함)
+ 	*
+	* @param authenticationprincipal 인증된 사용자 정보
  	* @return 예정된 예약과 지난 예약이 포함된 응답
  	*/
 	@GetMapping("/my")
-	public ResponseEntity<ApiResponse<StudentScheduleResponseDto>> getMyReservations(HttpSession session) {
+	public ResponseEntity<ApiResponse<StudentScheduleResponseDto>> getMyReservations(@AuthenticationPrincipal Long studentId) {
 
-		// if (session == null || session.getAttribute("userId") == null) {
-		// 	return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-		// 			.body(Map.of("message", "로그인이 필요합니다."));
-		// }
+		if (studentId == null) {
+			ErrorCode unauthorizedError = ErrorCode.UNAUTHORIZED;
 
-		// 추후 토큰에서 가져오는 걸로 수정
-		long studentId = (Long) session.getAttribute("userId");
+			return ResponseEntity.status(unauthorizedError.getStatus())
+					.body(ApiResponse.error(unauthorizedError));
+		}
+
+		log.info("인증된 사용자 ID: {}", studentId);
 
 		try {
 			StudentScheduleResponseDto response = reservationService.getMyReservations(studentId);
