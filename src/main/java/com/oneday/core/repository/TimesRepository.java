@@ -8,15 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.oneday.core.dto.EnrolledStudentDto;
-import com.oneday.core.dto.TeacherScheduleDto;
+import com.oneday.core.dto.teacher.TeacherScheduleDto;
 import com.oneday.core.entity.Times;
 
 @Repository
 public interface TimesRepository extends JpaRepository<Times, Integer> {
 
 	// 수업 및 강사 정보 조회 쿼리
-	@Query("SELECT new com.oneday.core.dto.TeacherScheduleDto(" +
+	@Query("SELECT new com.oneday.core.dto.teacher.TeacherScheduleDto(" +
 			"c.classId, c.className, c.location, c.longitude, c.latitude, c.maxCapacity, " +
 			"t.timeId, t.startAt, t.endAt, " +
 			"0L) " + // 예약자 수는 0으로 초기화
@@ -34,6 +33,7 @@ public interface TimesRepository extends JpaRepository<Times, Integer> {
 			"FROM Reservation r " +
 			"JOIN r.time t " +
 			"WHERE r.status.statusCode = :confirmedStatusId " +
+			"AND t.startAt > :currentTime " +
 			"AND t.classes.teacher.id = :teacherId " +
 			"GROUP BY t.timeId")
 	List<Object[]> findAllConfirmedReservationCounts(

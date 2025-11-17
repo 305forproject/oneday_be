@@ -1,4 +1,4 @@
-package com.oneday.core.dto;
+package com.oneday.core.dto.teacher;
 
 /**
  * 수강생 정보 DTO

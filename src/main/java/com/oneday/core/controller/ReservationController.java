@@ -2,13 +2,13 @@ package com.oneday.core.controller;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,15 +16,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.oneday.core.dto.ReservationRequestDto;
+import com.oneday.core.dto.common.ApiResponse;
+import com.oneday.core.dto.reservation.ReservationRequestDto;
+import com.oneday.core.dto.student.StudentScheduleResponseDto;
 import com.oneday.core.entity.Reservation;
+import com.oneday.core.exception.ErrorCode;
 import com.oneday.core.service.ReservationService;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/reservations")
 @RequiredArgsConstructor
 public class ReservationController {
-	private static final Logger log = LoggerFactory.getLogger(ReservationController.class);
 	private final ReservationService reservationService;
 
 	@PostMapping
@@ -73,6 +76,38 @@ public class ReservationController {
 			log.info("예약 취소 실패: {}", e.getMessage());
 			return ResponseEntity.badRequest()
 					.body(Map.of("message", e.getMessage()));
+		}
+	}
+
+	/**
+ 	* 학생 본인의 예약 목록 조회
+ 	* 
+	* @param session HTTP 세션 (학생 인증 정보 포함)
+ 	* @return 예정된 예약과 지난 예약이 포함된 응답
+ 	*/
+	@GetMapping("/my")
+	public ResponseEntity<ApiResponse<StudentScheduleResponseDto>> getMyReservations(HttpSession session) {
+
+		// if (session == null || session.getAttribute("userId") == null) {
+		// 	return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+		// 			.body(Map.of("message", "로그인이 필요합니다."));
+		// }
+
+		// 추후 토큰에서 가져오는 걸로 수정
+		long studentId = (Long) session.getAttribute("userId");
+
+		try {
+			StudentScheduleResponseDto response = reservationService.getMyReservations(studentId);
+			return ResponseEntity.ok(ApiResponse.success(response));
+
+		} catch (com.oneday.core.exception.CustomException e) {
+			log.warn("내 예약 조회 실패 (ID: {}): {}", studentId, e.getMessage());
+			return ResponseEntity.status(e.getErrorCode().getStatus())
+					.body(ApiResponse.error(e.getErrorCode()));
+		} catch (Exception e) {
+			log.error("내 예약 조회 중 예상치 못한 오류 발생 (ID: {})", studentId, e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
 		}
 	}
 }
