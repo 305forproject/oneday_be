@@ -70,7 +70,7 @@ public class ClassService {
 		log.info("클래스 검색 시도: keyword={}", keyword);
 
 		// 정렬(Sort) 조건 생성
-		Sort sort = Sort.by(Sort.Direction.DESC, "createdAt"); // 기본: 최신순
+		Sort sort = Sort.by(Sort.Direction.DESC, "classId"); // 기본: 최신 등록순
 		if ("price_asc".equals(sortKey)) {
 			sort = Sort.by(Sort.Direction.ASC, "price");
 		} else if ("price_desc".equals(sortKey)) {
