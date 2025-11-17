@@ -74,7 +74,7 @@ public class ClassController {
 			return ResponseEntity.ok(ApiResponse.success(responseDtos));
 
 		} catch (Exception e) {
-			log.error("클래스 조회 실패", e);
+			log.error("클래스 조회 실패: categoryId={}, keyword={}, sort={}", categoryId, keyword, sort, e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
 		}
