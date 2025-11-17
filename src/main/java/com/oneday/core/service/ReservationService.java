@@ -20,8 +20,10 @@ import com.oneday.core.repository.TimesRepository;
 import com.oneday.core.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ReservationService {
 	private static final Integer CONFIRMED = 1; // "예약 확정"
