@@ -51,6 +51,9 @@ public record ClassDetailResponseDto(
 				.maxCapacity(classes.getMaxCapacity())
 				.price(classes.getPrice())
 
+				.teacherName(classes.getTeacher() != null ? classes.getTeacher().getName() : null)
+            	.categoryName(classes.getCategory() != null ? classes.getCategory().getCategory() : null)
+
 				// 리스트 변환
 				.imageUrls(images.stream()
 						.map(Images::getImageUrl)
