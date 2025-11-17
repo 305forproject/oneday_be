@@ -2,8 +2,11 @@ package com.oneday.core.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,12 +14,16 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 import com.oneday.core.dto.classes.ClassMainResponseDto;
+import com.oneday.core.dto.classes.RegisterClassRequest;
+import com.oneday.core.dto.classes.RegisterClassResponse;
 import com.oneday.core.dto.common.ApiResponse;
 import com.oneday.core.entity.Classes;
+import com.oneday.core.entity.User;
 import com.oneday.core.exception.CustomException;
 import com.oneday.core.exception.ErrorCode;
 import com.oneday.core.service.ClassService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -95,5 +102,32 @@ public class ClassController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
 		}
+	}
+
+	/**
+	 * 클래스 등록
+	 * <p>
+	 * 인증된 사용자가 새로운 클래스를 등록합니다.
+	 * 다중 날짜 선택을 지원하며, 동일한 시간대에 여러 날짜를 한 번에 등록할 수 있습니다.
+	 * </p>
+	 *
+	 * @param user    인증된 사용자 (강사)
+	 * @param request 클래스 등록 요청 정보
+	 * @return 등록된 클래스 정보
+	 */
+	@PostMapping
+	public ResponseEntity<ApiResponse<RegisterClassResponse>> registerClass(
+			@AuthenticationPrincipal User user,
+			@Valid @RequestBody RegisterClassRequest request
+	) {
+		log.info("클래스 등록 요청: userId={}, className={}", user.getId(), request.className());
+
+		RegisterClassResponse response = classService.registerClass(user, request);
+
+		log.info("클래스 등록 완료: classId={}, className={}", response.classId(), response.className());
+
+		return ResponseEntity
+				.status(HttpStatus.CREATED)
+				.body(ApiResponse.success(response));
 	}
 }
