@@ -2,14 +2,11 @@ package com.oneday.core.config.security;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -49,7 +46,7 @@ public class JwtTokenProvider {
 
     /**
      * Access Token 생성
-     * ✅ userId, role 클레임 추가
+     * userId 클레임만 추가
      *
      * @param userDetails 사용자 정보
      * @return JWT Access Token
@@ -58,31 +55,23 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtProperties.getAccessTokenExpiration());
 
-        // ✅ User 엔티티에서 userId, role 추출
+        // User 엔티티에서 userId만 추출
         Long userId = null;
-        String role = null;
         if (userDetails instanceof com.oneday.core.entity.User) {
             com.oneday.core.entity.User user = (com.oneday.core.entity.User) userDetails;
             userId = user.getId();
-            role = user.getRole().name();
         }
-
-        List<String> authorities = userDetails.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .collect(Collectors.toList());
 
         String token = Jwts.builder()
             .setSubject(userDetails.getUsername())
-            .claim("userId", userId)          // ✅ userId 클레임 추가
-            .claim("role", role)              // ✅ role 클레임 추가
-            .claim("authorities", authorities)
+            .claim("userId", userId)          // userId 클레임만 추가
             .setIssuedAt(now)
             .setExpiration(expiryDate)
             .signWith(getSigningKey())
             .compact();
 
-        log.info("Access Token 생성 완료: email={}, userId={}, role={}", 
-                 userDetails.getUsername(), userId, role);
+        log.info("Access Token 생성 완료: email={}, userId={}",
+                 userDetails.getUsername(), userId);
         return token;
     }
 
@@ -115,24 +104,6 @@ public class JwtTokenProvider {
     }
 
     /**
-     * JWT 토큰에서 Role 추출
-     *
-     * @param token JWT 토큰
-     * @return 역할 문자열 (없으면 null)
-     */
-    public String getRoleFromToken(String token) {
-        Claims claims = parseToken(token);
-        Object roleClaim = claims.get("role");
-        
-        if (roleClaim == null) {
-            log.debug("토큰에 role 클레임이 없음");
-            return null;
-        }
-        
-        return roleClaim.toString();
-    }
-
-    /**
      * 토큰 유효성 검증 (예외 던짐)
      *
      * @param token JWT 토큰
@@ -160,38 +131,22 @@ public class JwtTokenProvider {
 
     /**
      * 토큰에서 Authentication 객체 생성
-     * ✅ User 엔티티를 Principal로 사용
+     * UserPrincipal을 Principal로 사용
      *
      * @param token JWT 토큰
      * @return Authentication 객체
      */
     public Authentication getAuthentication(String token) {
-        Claims claims = parseToken(token);
-
-        // ✅ 토큰에서 정보 추출
-        String email = claims.getSubject();
+        // 토큰에서 userId만 추출
         Long userId = getUserIdFromToken(token);
-        String roleStr = getRoleFromToken(token);
 
-        // userId가 없으면 예외 발생
-        if (userId == null) {
-            log.error("토큰에 userId 클레임이 없음: email={}", email);
-            throw new InvalidTokenException("유효하지 않은 토큰입니다. userId 클레임이 없습니다.");
-        }
-        // ✅ JWT 인증용 User 객체 생성 (경량 생성자 사용)
-        com.oneday.core.entity.Role role;
-        try {
-            role = com.oneday.core.entity.Role.valueOf(roleStr);
-        } catch (IllegalArgumentException e) {
-            log.error("유효하지 않은 role 값: {}", roleStr);
-            throw new InvalidTokenException("유효하지 않은 토큰입니다. 잘못된 role 값입니다.");
-        }
-        com.oneday.core.entity.User user = new com.oneday.core.entity.User(userId, email, role);
+        // UserPrincipal 생성 (ID만 포함)
+        UserPrincipal principal = new UserPrincipal(userId);
 
         return new UsernamePasswordAuthenticationToken(
-            user,  // ✅ User 엔티티를 Principal로 사용
+            principal,  // UserPrincipal을 Principal로 사용
             null,
-            user.getAuthorities()
+            java.util.Collections.emptyList() // 권한은 필요 시 별도 관리
         );
     }
 
