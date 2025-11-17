@@ -100,12 +100,14 @@ public class ReservationController {
 			StudentScheduleResponseDto response = reservationService.getMyReservations(studentId);
 			return ResponseEntity.ok(ApiResponse.success(response));
 
+		} catch (com.oneday.core.exception.CustomException e) {
+			log.warn("내 예약 조회 실패 (ID: {}): {}", studentId, e.getMessage());
+			return ResponseEntity.status(e.getErrorCode().getStatus())
+					.body(ApiResponse.error(e.getErrorCode()));
 		} catch (Exception e) {
-			log.error("내 예약 조회 중 오류 발생 (ID: {})", studentId, e);
-
+			log.error("내 예약 조회 중 예상치 못한 오류 발생 (ID: {})", studentId, e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
-
 		}
 	}
 }
