@@ -1,6 +1,7 @@
 package com.oneday.core.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -36,4 +37,13 @@ public interface ClassRepository extends JpaRepository<Classes, Integer> {
 			@Param("keyword") String keyword,
 			Sort sort
 	);
+
+	/**
+	 * 클래스 + 강사 + 카테고리 한 번에 조회
+	 */
+	@Query("SELECT c FROM Classes c " +
+			"JOIN FETCH c.teacher " +
+			"JOIN FETCH c.category " +
+			"WHERE c.classId = :classId")
+	Optional<Classes> findByIdWithDetails(@Param("classId") Integer classId);
 }

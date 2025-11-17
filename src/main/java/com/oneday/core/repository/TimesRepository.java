@@ -41,4 +41,6 @@ public interface TimesRepository extends JpaRepository<Times, Integer> {
 			@Param("confirmedStatusId") int confirmedStatusId
 	);
 
+	List<Times> findByClasses_ClassId(Integer classId);
+
 }

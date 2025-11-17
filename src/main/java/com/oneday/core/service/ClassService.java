@@ -8,11 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.oneday.core.dto.classes.ClassDetailResponseDto;
 import com.oneday.core.dto.classes.ClassMainResponseDto;
 import com.oneday.core.entity.Classes;
 import com.oneday.core.entity.Images;
+import com.oneday.core.entity.Times;
+import com.oneday.core.exception.CustomException;
+import com.oneday.core.exception.ErrorCode;
 import com.oneday.core.repository.ClassRepository;
 import com.oneday.core.repository.ImageRepository;
+import com.oneday.core.repository.TimesRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +29,7 @@ public class ClassService {
 
 	private final ClassRepository classRepository;
 	private final ImageRepository imageRepository;
-
-	public Classes getClassById(int classId) {
-		return classRepository.findById(classId)
-				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다."));
-	}
+	private final TimesRepository timeRepository;
 
 	/**
 	 * 모든 클래스 조회
@@ -60,15 +61,16 @@ public class ClassService {
 
 	/**
 	 * 검색
-	 * @param keyword 검색어
+	 *
+	 * @param keyword    검색어
 	 * @param categoryId 카테고리 ID
-	 * @param sortKey 정렬 기준
+	 * @param sortKey    정렬 기준
 	 * @return dto 반환
 	 */
 	public List<ClassMainResponseDto> getClasses(Integer categoryId, String keyword, String sortKey) {
 
 		log.info("클래스 조회 시도: categoryId={}, keyword={}, sortKey={}", categoryId, keyword, sortKey);
-		
+
 		// 정렬(Sort) 조건 생성
 		Sort sort = Sort.by(Sort.Direction.DESC, "classId"); // 기본: 최신 등록순
 		if ("price_asc".equals(sortKey)) {
@@ -85,7 +87,7 @@ public class ClassService {
 				sort
 		);
 
-        log.info("클래스 조회 완료: 조회 결과 {}건", searchResults.size());
+		log.info("클래스 조회 완료: 조회 결과 {}건", searchResults.size());
 
 		if (searchResults.isEmpty()) {
 			return Collections.emptyList();
@@ -112,5 +114,26 @@ public class ClassService {
 						representativeImageMap.get(c.getClassId())
 				))
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 * 클래스 상세 조회
+	 *
+	 * @param classId 클래스 ID
+	 * @return dto 반환
+	 */
+	public ClassDetailResponseDto getClassDetail(int classId) {
+		// 클래스 기본 정보 + 강사 + 카테고리 조회
+		Classes classes = classRepository.findByIdWithDetails(classId)
+				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+		// 해당 클래스의 이미지 리스트 조회
+		List<Images> images = imageRepository.findByClasses_ClassId(classId);
+
+		// 해당 클래스의 수업 시간표 조회
+		List<Times> times = timeRepository.findByClasses_ClassId(classId);
+
+		// DTO 변환 및 반환
+		return ClassDetailResponseDto.of(classes, images, times);
 	}
 }

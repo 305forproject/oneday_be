@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import com.oneday.core.dto.classes.ClassDetailResponseDto;
 import com.oneday.core.dto.classes.ClassMainResponseDto;
 import com.oneday.core.dto.common.ApiResponse;
 import com.oneday.core.entity.Classes;
@@ -29,33 +30,11 @@ public class ClassController {
 	private final ClassService classService;
 
 	/**
-	 * 특정 클래스 조회
-	 *
-	 * @param classId 조회할 클래스의 ID
-	 * @return 클래스 정보
-	 */
-	@GetMapping("/{classId}")
-	public ResponseEntity<ApiResponse<Classes>> getClassById(@PathVariable int classId) {
-		try {
-			Classes classInfo = classService.getClassById(classId);
-			return ResponseEntity.ok(ApiResponse.success(classInfo));
-
-		} catch (CustomException e) {
-			log.warn("클래스 조회 실패 (ID: {}): {}", classId, e.getMessage());
-			return ResponseEntity.status(e.getErrorCode().getStatus())
-					.body(ApiResponse.error(e.getErrorCode()));
-		} catch (Exception e) {
-			log.error("클래스 조회 중 예상치 못한 오류 발생 (ID: {})", classId, e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
-		}
-	}
-
-	/**
 	 * 클래스 검색
-	 * @param keyword 검색어
+	 *
+	 * @param keyword    검색어
 	 * @param categoryId 카테고리 ID
-	 * @param sort 정렬키
+	 * @param sort       정렬키
 	 * @return 검색 결과
 	 * 1. 전체 조회: GET /api/classes
 	 * 2. 카테고리 필터: GET /api/classes?categoryId=1
@@ -75,6 +54,29 @@ public class ClassController {
 
 		} catch (Exception e) {
 			log.error("클래스 조회 실패: categoryId={}, keyword={}, sort={}", categoryId, keyword, sort, e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
+		}
+	}
+
+	/**
+	 * 특정 클래스 조회
+	 *
+	 * @param classId 조회할 클래스의 ID
+	 * @return 클래스 정보
+	 */
+	@GetMapping("/{classId}")
+	public ResponseEntity<ApiResponse<ClassDetailResponseDto>> getClassById(@PathVariable int classId) {
+		try {
+			ClassDetailResponseDto classDetail = classService.getClassDetail(classId);
+			return ResponseEntity.ok(ApiResponse.success(classDetail));
+
+		} catch (CustomException e) {
+			log.warn("클래스 상세 조회 실패 (ID: {}): {}", classId, e.getMessage());
+			return ResponseEntity.status(e.getErrorCode().getStatus())
+					.body(ApiResponse.error(e.getErrorCode()));
+		} catch (Exception e) {
+			log.error("클래스 상세 조회 중 오류 (ID: {})", classId, e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
 		}
