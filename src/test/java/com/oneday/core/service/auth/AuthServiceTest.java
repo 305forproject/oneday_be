@@ -284,7 +284,6 @@ class AuthServiceTest {
             given(refreshTokenRepository.findByToken(oldRefreshToken))
                 .willReturn(Optional.of(refreshToken));
             given(jwtTokenProvider.validateToken(oldRefreshToken)).willReturn(true);
-            given(jwtTokenProvider.getUserEmailFromToken(oldRefreshToken)).willReturn(email);
             given(jwtTokenProvider.generateAccessToken(any(UserDetails.class))).willReturn("new-access-token");
             given(jwtTokenProvider.generateRefreshToken(any(UserDetails.class))).willReturn("new-refresh-token");
             given(jwtTokenProvider.getAccessTokenExpirationTime()).willReturn(3600L);
