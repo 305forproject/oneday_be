@@ -173,6 +173,11 @@ public class JwtTokenProvider {
         Long userId = getUserIdFromToken(token);
         String roleStr = getRoleFromToken(token);
 
+        // userId가 없으면 예외 발생
+        if (userId == null) {
+            log.error("토큰에 userId 클레임이 없음: email={}", email);
+            throw new InvalidTokenException("유효하지 않은 토큰입니다. userId 클레임이 없습니다.");
+        }
         // ✅ JWT 인증용 User 객체 생성 (경량 생성자 사용)
         com.oneday.core.entity.Role role;
         try {
