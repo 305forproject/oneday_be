@@ -123,6 +123,7 @@ public class ClassService {
 	 * @return dto 반환
 	 */
 	public ClassDetailResponseDto getClassDetail(int classId) {
+		log.info("클래스 상세 조회 시도: classId={}", classId);
 		// 클래스 기본 정보 + 강사 + 카테고리 조회
 		Classes classes = classRepository.findByIdWithDetails(classId)
 				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
