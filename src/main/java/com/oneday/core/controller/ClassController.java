@@ -77,7 +77,7 @@ public class ClassController {
 	 */
 	@GetMapping("/search")
 	public ResponseEntity<ApiResponse<List<ClassMainResponseDto>>> searchClasses(
-			@RequestParam String keyword) {
+			@RequestParam(required = false, defaultValue = "") String keyword) {
 
 		try {
 			List<ClassMainResponseDto> responseDtos;
