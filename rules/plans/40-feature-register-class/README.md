@@ -120,14 +120,14 @@ cat rules/plans/40-feature-register-class/phase-1-setup-and-entities.md
 
 ## 📊 진행 상황
 
-- [ ] Phase 1: 기본 설정 및 엔티티 준비
+- [x] Phase 1: 기본 설정 및 엔티티 준비 ✅
 - [ ] Phase 2: 예외 처리 구조
 - [ ] Phase 3: Repository 계층
 - [ ] Phase 4: Service 계층
 - [ ] Phase 5: Controller 계층
 - [ ] Phase 6: 테스트
 
-**전체 진행률**: 0/6 (0%)
+**전체 진행률**: 1/6 (17%)
 
 ---
 
