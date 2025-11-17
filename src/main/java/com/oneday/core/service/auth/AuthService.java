@@ -145,9 +145,9 @@ public class AuthService {
             throw new InvalidRefreshTokenException("유효하지 않은 Refresh Token입니다");
         }
 
-        // 4. 사용자 이메일 추출
-        String email = jwtTokenProvider.getUserEmailFromToken(refreshToken);
+        // 4. 사용자 정보 조회
         User user = savedToken.getUser();
+        String email = user.getEmail();
 
         // 5. 새로운 토큰 발급
         String newAccessToken = jwtTokenProvider.generateAccessToken(user);
