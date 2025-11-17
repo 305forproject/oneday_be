@@ -60,6 +60,10 @@ public class User implements UserDetails {
 
     private LocalDateTime updatedAt;
 
+    /**
+     * 일반 생성자 (DB 저장용)
+     * 회원가입 시 사용
+     */
     @Builder
     public User(String email, String password, String name, Role role) {
         this.email = email;
@@ -68,7 +72,9 @@ public class User implements UserDetails {
         this.role = role != null ? role : Role.USER;
     }
 
+    // ============================================
     // UserDetails 인터페이스 구현 메서드
+    // ============================================
 
     /**
      * 사용자의 권한 목록 반환
