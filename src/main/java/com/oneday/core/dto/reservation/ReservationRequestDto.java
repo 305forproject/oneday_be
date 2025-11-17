@@ -1,4 +1,4 @@
-package com.oneday.core.dto;
+package com.oneday.core.dto.reservation;
 
 import lombok.Getter;
 

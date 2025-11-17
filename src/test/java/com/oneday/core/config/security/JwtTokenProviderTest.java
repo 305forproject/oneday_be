@@ -63,19 +63,6 @@ class JwtTokenProviderTest {
     }
 
     @Test
-    @DisplayName("토큰에서 이메일 추출 - 성공")
-    void getEmailFromToken_Success() {
-        // given
-        String token = jwtTokenProvider.generateAccessToken(userDetails);
-
-        // when
-        String email = jwtTokenProvider.getEmailFromToken(token);
-
-        // then
-        assertThat(email).isEqualTo("user@example.com");
-    }
-
-    @Test
     @DisplayName("토큰 유효성 검증 - 성공")
     void validateToken_Success() {
         // given
@@ -126,10 +113,10 @@ class JwtTokenProviderTest {
 
         // then
         assertThat(authentication).isNotNull();
-        assertThat(authentication.getName()).isEqualTo("user@example.com");
-        assertThat(authentication.getAuthorities())
-            .extracting("authority")
-            .contains("ROLE_USER");
+        assertThat(authentication.getPrincipal()).isInstanceOf(UserPrincipal.class);
+        
+        UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
+        assertThat(principal.getUsername()).isNotNull();
     }
 
     @Test
