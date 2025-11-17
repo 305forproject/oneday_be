@@ -1,15 +1,11 @@
-package com.oneday.core.service;
+package com.oneday.core.service.classes;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import com.oneday.core.dto.classes.ClassMainResponseDto;
 import com.oneday.core.dto.classes.ImageDto;
 import com.oneday.core.dto.classes.RegisterClassRequest;
 import com.oneday.core.dto.classes.RegisterClassResponse;
@@ -22,140 +18,59 @@ import com.oneday.core.exception.classes.CategoryNotFoundException;
 import com.oneday.core.exception.classes.DuplicateClassTimeException;
 import com.oneday.core.exception.classes.InvalidClassTimeException;
 import com.oneday.core.exception.classes.InvalidImageException;
-import com.oneday.core.exception.CustomException;
-import com.oneday.core.exception.ErrorCode;
 import com.oneday.core.repository.CategoriesRepository;
-import com.oneday.core.repository.ClassRepository;
 import com.oneday.core.repository.ClassesRepository;
 import com.oneday.core.repository.ImageRepository;
 import com.oneday.core.repository.TimesRepository;
-import com.oneday.core.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 클래스 등록 서비스
+ * <p>
+ * 클래스 등록과 관련된 비즈니스 로직을 처리합니다.
+ * </p>
+ *
+ * @author zionge2k
+ * @since 2025-01-26
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ClassService {
+public class ClassesService {
 
-	private final ClassRepository classRepository;
-	private final ImageRepository imageRepository;
 	private final ClassesRepository classesRepository;
 	private final CategoriesRepository categoriesRepository;
 	private final TimesRepository timesRepository;
-	private final UserRepository userRepository;
-
-	public Classes getClassById(int classId) {
-		return classRepository.findById(classId)
-				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다."));
-	}
-
-	/**
-	 * 모든 클래스 조회
-	 *
-	 * @return dto 반환
-	 */
-	public List<ClassMainResponseDto> getAllClasses() {
-
-		// 대표 이미지들 모두 조회
-		// (Key: classId, Value: imageUrl)
-		Map<Integer, String> representativeImageMap = imageRepository.findAllRepresentativeImages()
-				.stream()
-				.collect(Collectors.toMap(
-						image -> image.getClasses().getClassId(),
-						Images::getImageUrl
-				));
-
-		// 클래스 목록 조회
-		List<Classes> classesList = classRepository.findAllWithTeacherAndCategory();
-
-		// DTO로 변환
-		return classesList.stream()
-				.map(c -> ClassMainResponseDto.of(
-						c,
-						representativeImageMap.get(c.getClassId())
-				))
-				.collect(Collectors.toList());
-	}
-
-	/**
-	 * 키워드로 클래스 검색
-	 *
-	 * @param keyword 검색어
-	 * @return dto 반환
-	 */
-	public List<ClassMainResponseDto> searchClasses(String keyword) {
-
-		log.info("클래스 검색 시도: keyword={}", keyword);
-        
-        // 키워드로 클래스 목록 조회
-        List<Classes> searchResults = classRepository.searchByKeyword(keyword);
-        
-        log.info("클래스 검색 완료: 검색 결과 {}건", searchResults.size());
-
-		if (searchResults.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		// 검색된 클래스들의 ID만 추출
-		List<Integer> classIds = searchResults.stream()
-				.map(Classes::getClassId)
-				.collect(Collectors.toList());
-
-		// 해당 ID들의 대표 이미지만 조회
-		Map<Integer, String> representativeImageMap = imageRepository.findRepresentativeImagesByClassIds(classIds)
-				.stream()
-				.collect(Collectors.toMap(
-						img -> img.getClasses().getClassId(),
-						Images::getImageUrl,
-						(existing, replacement) -> existing
-				));
-
-		// DTO로 변환
-		return searchResults.stream()
-				.map(c -> ClassMainResponseDto.of(
-						c,
-						representativeImageMap.get(c.getClassId())
-				))
-				.collect(Collectors.toList());
-	}
+	private final ImageRepository imageRepository;
 
 	/**
 	 * 클래스 등록
 	 * <p>
-	 * 1. 사용자 조회<br/>
-	 * 2. 카테고리 존재 여부 확인<br/>
-	 * 3. 시간 유효성 검증<br/>
-	 * 4. 시간 중복 검증 (강사의 모든 클래스 대상)<br/>
-	 * 5. 이미지 개수 검증<br/>
-	 * 6. 클래스 저장<br/>
-	 * 7. 시간 정보 저장 (다중 날짜)<br/>
-	 * 8. 이미지 정보 저장 (첫 번째 이미지를 대표 이미지로 설정)
+	 * 1. 카테고리 존재 여부 확인<br/>
+	 * 2. 시간 유효성 검증<br/>
+	 * 3. 시간 중복 검증 (강사의 모든 클래스 대상)<br/>
+	 * 4. 이미지 개수 검증<br/>
+	 * 5. 클래스 저장<br/>
+	 * 6. 시간 정보 저장 (다중 날짜)<br/>
+	 * 7. 이미지 정보 저장 (첫 번째 이미지를 대표 이미지로 설정)
 	 * </p>
 	 *
-	 * @param userId  인증된 사용자 ID
+	 * @param teacher 강사 (인증된 사용자)
 	 * @param request 클래스 등록 요청 정보
 	 * @return 등록된 클래스 정보
-	 * @throws CustomException                사용자를 찾을 수 없는 경우
 	 * @throws CategoryNotFoundException      존재하지 않는 카테고리
 	 * @throws InvalidClassTimeException      유효하지 않은 시간 정보
 	 * @throws DuplicateClassTimeException    시간 중복
 	 * @throws InvalidImageException          유효하지 않은 이미지 정보
 	 */
 	@Transactional
-	public RegisterClassResponse registerClass(Long userId, RegisterClassRequest request) {
-		log.info("클래스 등록 시작: userId={}, className={}", userId, request.className());
+	public RegisterClassResponse registerClass(User teacher, RegisterClassRequest request) {
+		log.info("클래스 등록 시작: teacherId={}, className={}", teacher.getId(), request.className());
 
-		// 1. 사용자 조회
-		User teacher = userRepository.findById(userId)
-				.orElseThrow(() -> {
-					log.warn("존재하지 않는 사용자 ID: {}", userId);
-					return new CustomException(ErrorCode.USER_NOT_FOUND, "사용자를 찾을 수 없습니다");
-				});
-
-		// 2. 카테고리 검증
+		// 1. 카테고리 검증
 		Categories category = validateCategory(request.category().getKoreanName());
 
 		// 2. 시간 유효성 검증

@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import com.oneday.core.config.security.UserPrincipal;
 import com.oneday.core.dto.classes.ClassMainResponseDto;
 import com.oneday.core.dto.classes.RegisterClassRequest;
 import com.oneday.core.dto.classes.RegisterClassResponse;
 import com.oneday.core.dto.common.ApiResponse;
 import com.oneday.core.entity.Classes;
-import com.oneday.core.entity.User;
 import com.oneday.core.exception.CustomException;
 import com.oneday.core.exception.ErrorCode;
 import com.oneday.core.service.ClassService;
@@ -111,18 +111,18 @@ public class ClassController {
 	 * 다중 날짜 선택을 지원하며, 동일한 시간대에 여러 날짜를 한 번에 등록할 수 있습니다.
 	 * </p>
 	 *
-	 * @param user    인증된 사용자 (강사)
-	 * @param request 클래스 등록 요청 정보
+	 * @param principal 인증된 사용자 정보 (JWT에서 추출)
+	 * @param request   클래스 등록 요청 정보
 	 * @return 등록된 클래스 정보
 	 */
 	@PostMapping
 	public ResponseEntity<ApiResponse<RegisterClassResponse>> registerClass(
-			@AuthenticationPrincipal User user,
+			@AuthenticationPrincipal UserPrincipal principal,
 			@Valid @RequestBody RegisterClassRequest request
 	) {
-		log.info("클래스 등록 요청: userId={}, className={}", user.getId(), request.className());
+		log.info("클래스 등록 요청: userId={}, className={}", principal.getId(), request.className());
 
-		RegisterClassResponse response = classService.registerClass(user, request);
+		RegisterClassResponse response = classService.registerClass(principal.getId(), request);
 
 		log.info("클래스 등록 완료: classId={}, className={}", response.classId(), response.className());
 
