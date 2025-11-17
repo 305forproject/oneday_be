@@ -174,7 +174,13 @@ public class JwtTokenProvider {
         String roleStr = getRoleFromToken(token);
 
         // ✅ JWT 인증용 User 객체 생성 (경량 생성자 사용)
-        com.oneday.core.entity.Role role = com.oneday.core.entity.Role.valueOf(roleStr);
+        com.oneday.core.entity.Role role;
+        try {
+            role = com.oneday.core.entity.Role.valueOf(roleStr);
+        } catch (IllegalArgumentException e) {
+            log.error("유효하지 않은 role 값: {}", roleStr);
+            throw new InvalidTokenException("유효하지 않은 토큰입니다. 잘못된 role 값입니다.");
+        }
         com.oneday.core.entity.User user = new com.oneday.core.entity.User(userId, email, role);
 
         return new UsernamePasswordAuthenticationToken(
