@@ -21,4 +21,7 @@ public interface ImageRepository extends JpaRepository<Images, Integer> {
 	 */
 	@Query("SELECT i FROM Images i JOIN FETCH i.classes WHERE i.classes.classId IN :classIds AND i.isRepresentative = true")
 	List<Images> findRepresentativeImagesByClassIds(@Param("classIds") List<Integer> classIds);
+
+	// 해당 클래스의 모든 이미지 조회
+	List<Images> findByClasses_ClassId(Integer classId);
 }
