@@ -29,6 +29,7 @@ public class ClassService {
 
 	/**
 	 * 모든 클래스 조회
+	 *
 	 * @return dto 반환
 	 */
 	public List<ClassMainResponseDto> getAllClasses() {
@@ -56,6 +57,7 @@ public class ClassService {
 
 	/**
 	 * 키워드로 클래스 검색
+	 *
 	 * @param keyword 검색어
 	 * @return dto 반환
 	 */

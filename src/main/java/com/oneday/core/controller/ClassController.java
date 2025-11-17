@@ -30,6 +30,7 @@ public class ClassController {
 
 	/**
 	 * 메인 화면용 모든 클래스 조회 (DTO 반환)
+	 *
 	 * @return 클래스 목록
 	 */
 	@GetMapping
@@ -47,6 +48,7 @@ public class ClassController {
 
 	/**
 	 * 특정 클래스 조회
+	 *
 	 * @param classId 조회할 클래스의 ID
 	 * @return 클래스 정보
 	 */
@@ -69,6 +71,7 @@ public class ClassController {
 
 	/**
 	 * 클래스 검색
+	 *
 	 * @param keyword 검색어
 	 * @return 검색 결과
 	 */

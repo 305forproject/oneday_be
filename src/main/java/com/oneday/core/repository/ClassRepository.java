@@ -18,6 +18,7 @@ public interface ClassRepository extends JpaRepository<Classes, Integer> {
 	 */
 	@Query("SELECT c FROM Classes c JOIN FETCH c.teacher JOIN FETCH c.category")
 	List<Classes> findAllWithTeacherAndCategory();
+
 	/**
 	 * 검색어가 클래스 이름이나 강사 이름에 포함된 목록 조회
 	 */
