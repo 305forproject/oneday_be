@@ -67,8 +67,8 @@ public class ClassService {
 	 */
 	public List<ClassMainResponseDto> getClasses(Integer categoryId, String keyword, String sortKey) {
 
-		log.info("클래스 검색 시도: keyword={}", keyword);
-
+		log.info("클래스 조회 시도: categoryId={}, keyword={}, sortKey={}", categoryId, keyword, sortKey);
+		
 		// 정렬(Sort) 조건 생성
 		Sort sort = Sort.by(Sort.Direction.DESC, "classId"); // 기본: 최신 등록순
 		if ("price_asc".equals(sortKey)) {
