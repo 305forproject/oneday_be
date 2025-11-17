@@ -46,7 +46,7 @@ public class JwtTokenProvider {
 
     /**
      * Access Token 생성
-     * userId 클레임만 추가
+     * userId, role 클레임 추가
      *
      * @param userDetails 사용자 정보
      * @return JWT Access Token
@@ -55,23 +55,26 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtProperties.getAccessTokenExpiration());
 
-        // User 엔티티에서 userId만 추출
+        // User 엔티티에서 userId, role 추출
         Long userId = null;
+        String role = null;
         if (userDetails instanceof com.oneday.core.entity.User) {
             com.oneday.core.entity.User user = (com.oneday.core.entity.User) userDetails;
             userId = user.getId();
+            role = user.getRole().name();
         }
 
         String token = Jwts.builder()
             .setSubject(userDetails.getUsername())
-            .claim("userId", userId)          // userId 클레임만 추가
+            .claim("userId", userId)
+            .claim("role", role)
             .setIssuedAt(now)
             .setExpiration(expiryDate)
             .signWith(getSigningKey())
             .compact();
 
-        log.info("Access Token 생성 완료: email={}, userId={}",
-                 userDetails.getUsername(), userId);
+        log.info("Access Token 생성 완료: email={}, userId={}, role={}",
+                 userDetails.getUsername(), userId, role);
         return token;
     }
 
@@ -137,20 +140,39 @@ public class JwtTokenProvider {
      * @return Authentication 객체
      */
     public Authentication getAuthentication(String token) {
-        // 토큰에서 userId만 추출
+        // 토큰에서 userId, role 추출
         Long userId = getUserIdFromToken(token);
+        String roleStr = getRoleFromToken(token);
 
-        // UserPrincipal 생성 (ID만 포함)
-        UserPrincipal principal = new UserPrincipal(userId);
+        // UserPrincipal 생성 (ID, role 포함)
+        UserPrincipal principal = new UserPrincipal(userId, roleStr);
 
         return new UsernamePasswordAuthenticationToken(
-            principal,  // UserPrincipal을 Principal로 사용
+            principal,
             null,
-            java.util.Collections.emptyList() // 권한은 필요 시 별도 관리
+            principal.getAuthorities() // UserPrincipal의 권한 사용
         );
     }
 
 
+
+    /**
+     * JWT 토큰에서 Role 추출
+     *
+     * @param token JWT 토큰
+     * @return Role 문자열 (없으면 null)
+     */
+    public String getRoleFromToken(String token) {
+        Claims claims = parseToken(token);
+        Object roleClaim = claims.get("role");
+
+        if (roleClaim == null) {
+            log.debug("토큰에 role 클레임이 없음");
+            return null;
+        }
+
+        return roleClaim.toString();
+    }
 
     /**
      * JWT 토큰에서 User ID 추출
