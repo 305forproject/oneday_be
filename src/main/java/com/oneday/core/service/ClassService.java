@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.oneday.core.dto.classes.ClassMainResponseDto;
-import com.oneday.core.dto.common.ApiResponse;
 import com.oneday.core.entity.Classes;
 import com.oneday.core.entity.Images;
 import com.oneday.core.exception.ErrorCode;
