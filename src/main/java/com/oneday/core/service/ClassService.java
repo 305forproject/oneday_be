@@ -1,8 +1,8 @@
 package com.oneday.core.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -10,12 +10,13 @@ import java.util.stream.Collectors;
 import com.oneday.core.dto.classes.ClassMainResponseDto;
 import com.oneday.core.entity.Classes;
 import com.oneday.core.entity.Images;
-import com.oneday.core.exception.ErrorCode;
 import com.oneday.core.repository.ClassRepository;
 import com.oneday.core.repository.ImageRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ClassService {
@@ -30,6 +31,8 @@ public class ClassService {
 
 	/**
 	 * 모든 클래스 조회
+	 *
+	 * @return dto 반환
 	 */
 	public List<ClassMainResponseDto> getAllClasses() {
 
@@ -54,4 +57,45 @@ public class ClassService {
 				.collect(Collectors.toList());
 	}
 
+	/**
+	 * 키워드로 클래스 검색
+	 *
+	 * @param keyword 검색어
+	 * @return dto 반환
+	 */
+	public List<ClassMainResponseDto> searchClasses(String keyword) {
+
+		log.info("클래스 검색 시도: keyword={}", keyword);
+        
+        // 키워드로 클래스 목록 조회
+        List<Classes> searchResults = classRepository.searchByKeyword(keyword);
+        
+        log.info("클래스 검색 완료: 검색 결과 {}건", searchResults.size());
+
+		if (searchResults.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		// 검색된 클래스들의 ID만 추출
+		List<Integer> classIds = searchResults.stream()
+				.map(Classes::getClassId)
+				.collect(Collectors.toList());
+
+		// 해당 ID들의 대표 이미지만 조회
+		Map<Integer, String> representativeImageMap = imageRepository.findRepresentativeImagesByClassIds(classIds)
+				.stream()
+				.collect(Collectors.toMap(
+						img -> img.getClasses().getClassId(),
+						Images::getImageUrl,
+						(existing, replacement) -> existing
+				));
+
+		// DTO로 변환
+		return searchResults.stream()
+				.map(c -> ClassMainResponseDto.of(
+						c,
+						representativeImageMap.get(c.getClassId())
+				))
+				.collect(Collectors.toList());
+	}
 }

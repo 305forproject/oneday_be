@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class ClassController {
 
 	/**
 	 * 메인 화면용 모든 클래스 조회 (DTO 반환)
+	 *
 	 * @return 클래스 목록
 	 */
 	@GetMapping
@@ -46,6 +48,7 @@ public class ClassController {
 
 	/**
 	 * 특정 클래스 조회
+	 *
 	 * @param classId 조회할 클래스의 ID
 	 * @return 클래스 정보
 	 */
@@ -61,6 +64,34 @@ public class ClassController {
 					.body(ApiResponse.error(e.getErrorCode()));
 		} catch (Exception e) {
 			log.error("클래스 조회 중 예상치 못한 오류 발생 (ID: {})", classId, e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
+		}
+	}
+
+	/**
+	 * 클래스 검색
+	 *
+	 * @param keyword 검색어
+	 * @return 검색 결과
+	 */
+	@GetMapping("/search")
+	public ResponseEntity<ApiResponse<List<ClassMainResponseDto>>> searchClasses(
+			@RequestParam(required = false, defaultValue = "") String keyword) {
+
+		try {
+			List<ClassMainResponseDto> responseDtos;
+
+			if (keyword == null || keyword.trim().isEmpty()) {
+				responseDtos = classService.getAllClasses();
+			} else {
+				responseDtos = classService.searchClasses(keyword);
+			}
+
+			return ResponseEntity.ok(ApiResponse.success(responseDtos));
+
+		} catch (Exception e) {
+			log.error("클래스 검색 중 오류 발생 (keyword: {})", keyword, e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
 		}
