@@ -85,7 +85,7 @@ public class ClassService {
 				sort
 		);
 
-        log.info("클래스 검색 완료: 검색 결과 {}건", searchResults.size());
+        log.info("클래스 조회 완료: 조회 결과 {}건", searchResults.size());
 
 		if (searchResults.isEmpty()) {
 			return Collections.emptyList();
