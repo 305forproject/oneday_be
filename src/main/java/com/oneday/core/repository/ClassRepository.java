@@ -24,6 +24,6 @@ public interface ClassRepository extends JpaRepository<Classes, Integer> {
 	@Query("SELECT c FROM Classes c " +
 			"JOIN FETCH c.teacher " +
 			"JOIN FETCH c.category " +
-			"WHERE c.className LIKE %:keyword% OR c.teacher.name LIKE %:keyword%")
+			"WHERE c.className LIKE CONCAT('%', :keyword, '%') OR c.teacher.name LIKE CONCAT('%', :keyword, '%')")
 	List<Classes> searchByKeyword(@Param("keyword") String keyword);
 }
