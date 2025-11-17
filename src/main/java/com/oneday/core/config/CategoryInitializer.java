@@ -44,16 +44,15 @@ public class CategoryInitializer {
 		if (count == 0) {
 			log.info("Categories 테이블 초기화 시작");
 
-			Arrays.stream(CategoryType.values())
-					.forEach(type -> {
-						Categories category = Categories.builder()
-								.category(type.getKoreanName())
-								.build();
-						categoriesRepository.save(category);
-						log.info("카테고리 등록: {}", type.getKoreanName());
-					});
+			// 모든 카테고리 엔티티를 리스트로 생성 후 배치 저장
+			var categories = Arrays.stream(CategoryType.values())
+					.map(type -> Categories.builder()
+							.category(type.getKoreanName())
+							.build())
+					.toList();
+			categoriesRepository.saveAll(categories);
 
-			log.info("Categories 테이블 초기화 완료: {} 개", CategoryType.values().length);
+			log.info("Categories 테이블 초기화 완료: {} 개", categories.size());
 		} else {
 			log.info("Categories 테이블 이미 초기화됨: {} 개", count);
 		}
