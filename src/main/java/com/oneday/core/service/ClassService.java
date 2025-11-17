@@ -1,5 +1,6 @@
 package com.oneday.core.service;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -58,19 +59,33 @@ public class ClassService {
 	}
 
 	/**
-	 * 키워드로 클래스 검색
-	 *
+	 * 검색
 	 * @param keyword 검색어
+	 * @param categoryId 카테고리 ID
+	 * @param sortKey 정렬 기준
 	 * @return dto 반환
 	 */
-	public List<ClassMainResponseDto> searchClasses(String keyword) {
+	public List<ClassMainResponseDto> getClasses(Integer categoryId, String keyword, String sortKey) {
 
-		log.info("클래스 검색 시도: keyword={}", keyword);
-        
-        // 키워드로 클래스 목록 조회
-        List<Classes> searchResults = classRepository.searchByKeyword(keyword);
-        
-        log.info("클래스 검색 완료: 검색 결과 {}건", searchResults.size());
+		log.info("클래스 조회 시도: categoryId={}, keyword={}, sortKey={}", categoryId, keyword, sortKey);
+		
+		// 정렬(Sort) 조건 생성
+		Sort sort = Sort.by(Sort.Direction.DESC, "classId"); // 기본: 최신 등록순
+		if ("price_asc".equals(sortKey)) {
+			sort = Sort.by(Sort.Direction.ASC, "price");
+		} else if ("price_desc".equals(sortKey)) {
+			sort = Sort.by(Sort.Direction.DESC, "price");
+		}
+		// 하고 싶은 정렬 있으면 추가하기
+
+		// 검색 조건에 맞는 클래스 목록 조회
+		List<Classes> searchResults = classRepository.findAllByConditions(
+				categoryId,
+				keyword,
+				sort
+		);
+
+        log.info("클래스 조회 완료: 조회 결과 {}건", searchResults.size());
 
 		if (searchResults.isEmpty()) {
 			return Collections.emptyList();

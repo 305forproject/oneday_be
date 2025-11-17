@@ -29,24 +29,6 @@ public class ClassController {
 	private final ClassService classService;
 
 	/**
-	 * 메인 화면용 모든 클래스 조회 (DTO 반환)
-	 *
-	 * @return 클래스 목록
-	 */
-	@GetMapping
-	public ResponseEntity<ApiResponse<List<ClassMainResponseDto>>> getAllClasses() {
-		try {
-			List<ClassMainResponseDto> responseDtos = classService.getAllClasses();
-			return ResponseEntity.ok(ApiResponse.success(responseDtos));
-
-		} catch (Exception e) {
-			log.error("모든 클래스 조회 중 예상치 못한 오류 발생", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
-		}
-	}
-
-	/**
 	 * 특정 클래스 조회
 	 *
 	 * @param classId 조회할 클래스의 ID
@@ -71,27 +53,28 @@ public class ClassController {
 
 	/**
 	 * 클래스 검색
-	 *
 	 * @param keyword 검색어
+	 * @param categoryId 카테고리 ID
+	 * @param sort 정렬키
 	 * @return 검색 결과
+	 * 1. 전체 조회: GET /api/classes
+	 * 2. 카테고리 필터: GET /api/classes?categoryId=1
+	 * 3. 검색: GET /api/classes?keyword=딸기
+	 * 4. 정렬: GET /api/classes?sort=price_asc
+	 * 5. 전부 다: GET /api/classes?categoryId=1&keyword=딸기&sort=price_asc
 	 */
-	@GetMapping("/search")
-	public ResponseEntity<ApiResponse<List<ClassMainResponseDto>>> searchClasses(
-			@RequestParam(required = false, defaultValue = "") String keyword) {
-
+	@GetMapping
+	public ResponseEntity<ApiResponse<List<ClassMainResponseDto>>> getClasses(
+			@RequestParam(required = false) Integer categoryId, // 선택 안 하면 null
+			@RequestParam(required = false) String keyword,     // 입력 안 하면 null
+			@RequestParam(defaultValue = "latest") String sort  // 기본값 latest
+	) {
 		try {
-			List<ClassMainResponseDto> responseDtos;
-
-			if (keyword == null || keyword.trim().isEmpty()) {
-				responseDtos = classService.getAllClasses();
-			} else {
-				responseDtos = classService.searchClasses(keyword);
-			}
-
+			List<ClassMainResponseDto> responseDtos = classService.getClasses(categoryId, keyword, sort);
 			return ResponseEntity.ok(ApiResponse.success(responseDtos));
 
 		} catch (Exception e) {
-			log.error("클래스 검색 중 오류 발생 (keyword: {})", keyword, e);
+			log.error("클래스 조회 실패: categoryId={}, keyword={}, sort={}", categoryId, keyword, sort, e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
 		}
