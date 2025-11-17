@@ -1,19 +1,12 @@
 package com.oneday.core.config.security;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -53,6 +46,7 @@ public class JwtTokenProvider {
 
     /**
      * Access Token 생성
+     * userId, role 클레임 추가
      *
      * @param userDetails 사용자 정보
      * @return JWT Access Token
@@ -61,19 +55,30 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtProperties.getAccessTokenExpiration());
 
-        List<String> authorities = userDetails.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .collect(Collectors.toList());
+        // User 엔티티에서 userId, role 추출
+        Long userId = null;
+        String role = null;
+        if (userDetails instanceof com.oneday.core.entity.User) {
+            com.oneday.core.entity.User user = (com.oneday.core.entity.User) userDetails;
+            userId = user.getId();
+            role = user.getRole().name();
+        }
 
+        if (userId == null) {
+            log.warn("Access Token 생성 실패: userId가 null입니다. email={}", userDetails.getUsername());
+            throw new InvalidTokenException("userId가 null이므로 Access Token을 생성할 수 없습니다.");
+        }
         String token = Jwts.builder()
             .setSubject(userDetails.getUsername())
-            .claim("authorities", authorities)
+            .claim("userId", userId)
+            .claim("role", role)
             .setIssuedAt(now)
             .setExpiration(expiryDate)
             .signWith(getSigningKey())
             .compact();
 
-        log.info("Access Token 생성 완료: email={}", userDetails.getUsername());
+        log.info("Access Token 생성 완료: email={}, userId={}, role={}",
+                 userDetails.getUsername(), userId, role);
         return token;
     }
 
@@ -106,17 +111,6 @@ public class JwtTokenProvider {
     }
 
     /**
-     * 토큰에서 이메일 추출
-     *
-     * @param token JWT 토큰
-     * @return 이메일
-     */
-    public String getEmailFromToken(String token) {
-        Claims claims = parseToken(token);
-        return claims.getSubject();
-    }
-
-    /**
      * 토큰 유효성 검증 (예외 던짐)
      *
      * @param token JWT 토큰
@@ -144,67 +138,44 @@ public class JwtTokenProvider {
 
     /**
      * 토큰에서 Authentication 객체 생성
+     * UserPrincipal을 Principal로 사용
      *
      * @param token JWT 토큰
      * @return Authentication 객체
      */
     public Authentication getAuthentication(String token) {
-        Claims claims = parseToken(token);
+        // 토큰에서 userId, role 추출
+        Long userId = getUserIdFromToken(token);
+        String roleStr = getRoleFromToken(token);
 
-        List<SimpleGrantedAuthority> grantedAuthorities = extractAuthorities(claims);
-
-        UserDetails userDetails = User.builder()
-            .username(claims.getSubject())
-            .password("")
-            .authorities(grantedAuthorities)
-            .build();
+        // UserPrincipal 생성 (ID, role 포함)
+        UserPrincipal principal = new UserPrincipal(userId, roleStr);
 
         return new UsernamePasswordAuthenticationToken(
-            userDetails,
-            "",
-            grantedAuthorities
+            principal,
+            null,
+            principal.getAuthorities() // UserPrincipal의 권한 사용
         );
     }
 
-    /**
-     * Claims에서 권한 정보 추출
-     * null 체크 및 타입 검증을 수행하여 안전하게 권한 리스트를 반환합니다.
-     *
-     * @param claims JWT Claims
-     * @return 권한 리스트
-     */
-    private List<SimpleGrantedAuthority> extractAuthorities(Claims claims) {
-        Object authoritiesObj = claims.get("authorities");
-
-        if (authoritiesObj == null) {
-            log.debug("토큰에 authorities 클레임 없음 - 빈 권한 리스트 반환");
-            return Collections.emptyList();
-        }
-
-        if (!(authoritiesObj instanceof List<?>)) {
-            log.warn("authorities 클레임 타입 오류: {}", authoritiesObj.getClass());
-            return Collections.emptyList();
-        }
-
-        @SuppressWarnings("unchecked")
-        List<String> authorities = (List<String>)authoritiesObj;
-
-        return authorities.stream()
-            .filter(Objects::nonNull) // null 값 필터링
-            .map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toList());
-    }
 
 
     /**
-     * JWT 토큰에서 사용자 이메일 추출
+     * JWT 토큰에서 Role 추출
      *
      * @param token JWT 토큰
-     * @return 사용자 이메일
+     * @return Role 문자열 (없으면 null)
      */
-    public String getUserEmailFromToken(String token) {
+    public String getRoleFromToken(String token) {
         Claims claims = parseToken(token);
-        return claims.getSubject();
+        Object roleClaim = claims.get("role");
+
+        if (roleClaim == null) {
+            log.debug("토큰에 role 클레임이 없음");
+            return null;
+        }
+
+        return roleClaim.toString();
     }
 
     /**
