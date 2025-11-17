@@ -64,6 +64,10 @@ public class JwtTokenProvider {
             role = user.getRole().name();
         }
 
+        if (userId == null) {
+            log.warn("Access Token 생성 실패: userId가 null입니다. email={}", userDetails.getUsername());
+            throw new InvalidTokenException("userId가 null이므로 Access Token을 생성할 수 없습니다.");
+        }
         String token = Jwts.builder()
             .setSubject(userDetails.getUsername())
             .claim("userId", userId)
