@@ -52,10 +52,10 @@ public class ReservationController {
 	}
 
 	/**
-	* 학생 본인의 예약 목록 조회 
-	* @param session HTTP 세션 (학생 인증 정보 포함)
-	* @return 예정된 예약과 지난 예약이 포함된 응답
-	*/
+	 * 예약 취소
+	 *
+	 * @param reservationId 취소할 예약의 ID
+	 */
 	@PatchMapping("/{reservationId}/cancel")
 	public ResponseEntity<?> cancelReservation(
 			@PathVariable int reservationId,
