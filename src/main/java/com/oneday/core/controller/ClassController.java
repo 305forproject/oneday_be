@@ -13,7 +13,6 @@ import java.util.List;
 import com.oneday.core.dto.classes.ClassDetailResponseDto;
 import com.oneday.core.dto.classes.ClassMainResponseDto;
 import com.oneday.core.dto.common.ApiResponse;
-import com.oneday.core.entity.Classes;
 import com.oneday.core.exception.CustomException;
 import com.oneday.core.exception.ErrorCode;
 import com.oneday.core.service.ClassService;
