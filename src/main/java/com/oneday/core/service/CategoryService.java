@@ -1,7 +1,6 @@
 package com.oneday.core.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +25,10 @@ public class CategoryService {
 	 * @return dto 반환
 	 */
 	public List<CategoryResponseDto> getAllCategories() {
-		log.info("카테고리 조회 완료: {}개", categories.size());
-		return categoryRepository.findAll().stream()
+		List<CategoryResponseDto> categories = categoryRepository.findAll().stream()
         	.map(CategoryResponseDto::from)
         	.toList();
+		log.info("카테고리 조회 완료: {}개", categories.size());
+		return categories;
 	}
 }
