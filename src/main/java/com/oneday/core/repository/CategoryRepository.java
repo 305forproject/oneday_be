@@ -5,7 +5,6 @@ import org.springframework.stereotype.Repository;
 
 import com.oneday.core.entity.Categories;
 
-@Repository
 public interface CategoryRepository extends JpaRepository<Categories, Integer> {
 
 }
