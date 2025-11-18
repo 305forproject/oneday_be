@@ -49,6 +49,8 @@ application-*.yml
 
 
 ### code rules ###
-#/rules/plans
+/rules/plans
 /rules/reports
-#/rules/prds
+/rules/prds
+/rules/.gitattributes
+/rules/.editorconfig

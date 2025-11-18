@@ -1,22 +1,29 @@
 package com.oneday.core.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
+import com.oneday.core.config.security.UserPrincipal;
 import com.oneday.core.dto.classes.ClassMainResponseDto;
+import com.oneday.core.dto.classes.RegisterClassRequest;
+import com.oneday.core.dto.classes.RegisterClassResponse;
 import com.oneday.core.dto.common.ApiResponse;
 import com.oneday.core.entity.Classes;
 import com.oneday.core.exception.CustomException;
 import com.oneday.core.exception.ErrorCode;
 import com.oneday.core.service.ClassService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -96,4 +103,40 @@ public class ClassController {
 					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
 		}
 	}
+
+	/**
+	 * 클래스 등록
+	 * <p>
+	 * 인증된 사용자가 새로운 클래스를 등록합니다.
+	 * 다중 날짜 선택을 지원하며, 동일한 시간대에 여러 날짜를 한 번에 등록할 수 있습니다.
+	 * </p>
+	 *
+	 * @param principal 인증된 사용자 정보 (JWT에서 추출)
+	 * @param request   클래스 등록 요청 정보
+	 * @return 등록된 클래스 정보
+	 */
+	@PostMapping
+    public ResponseEntity<ApiResponse<RegisterClassResponse>> registerClass(
+        @AuthenticationPrincipal UserPrincipal principal,
+        @Valid @RequestBody RegisterClassRequest request
+    ) {
+        log.info("클래스 등록 요청: userId={}, className={}", principal.getId(), request.className());
+
+        try {
+            RegisterClassResponse response = classService.registerClass(principal.getId(), request);
+            log.info("클래스 등록 완료: classId={}, className={}", response.classId(), response.className());
+
+            return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(response));
+        } catch (CustomException e) {
+            log.warn("클래스 등록 실패: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getStatus())
+                .body(ApiResponse.error(e.getErrorCode()));
+        } catch (Exception e) {
+            log.error("클래스 등록 중 예상치 못한 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
+        }
+    }
 }
