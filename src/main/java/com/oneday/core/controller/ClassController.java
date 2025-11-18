@@ -122,12 +122,21 @@ public class ClassController {
 	) {
 		log.info("클래스 등록 요청: userId={}, className={}", principal.getId(), request.className());
 
-		RegisterClassResponse response = classService.registerClass(principal.getId(), request);
+		try {
+			RegisterClassResponse response = classService.registerClass(principal.getId(), request);
+			log.info("클래스 등록 완료: classId={}, className={}", response.classId(), response.className());
 
-		log.info("클래스 등록 완료: classId={}, className={}", response.classId(), response.className());
-
-		return ResponseEntity
-				.status(HttpStatus.CREATED)
-				.body(ApiResponse.success(response));
+			return ResponseEntity
+					.status(HttpStatus.CREATED)
+					.body(ApiResponse.success(response));
+		} catch (CustomException e) {
+			log.warn("클래스 등록 실패: {}", e.getMessage());
+			return ResponseEntity.status(e.getErrorCode().getStatus())
+					.body(ApiResponse.error(e.getErrorCode()));
+		} catch (Exception e) {
+			log.error("클래스 등록 중 예상치 못한 오류 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
+		}
 	}
 }
