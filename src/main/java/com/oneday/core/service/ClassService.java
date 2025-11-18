@@ -322,35 +322,40 @@ public class ClassService {
 	 * 인덱스 기반 스트림을 사용하여 O(n) 성능을 보장합니다.
 	 * </p>
 	 */
-	private void saveImages(Classes classes, List<ImageDto> images) {
-		List<Images> imageEntities = java.util.stream.IntStream.range(0, images.size())
-				.mapToObj(i -> Images.builder()
-						.classes(classes)
-						.imageUrl(images.get(i).imageUrl())
-						.isRepresentative(i == 0)
-						.build())
-				.toList();
+    private void saveImages(Classes classes, List<ImageDto> images) {
+        List<Images> imageEntities = java.util.stream.IntStream.range(0, images.size())
+            .mapToObj(i -> Images.builder()
+                .classes(classes)
+                .imageUrl(images.get(i).imageUrl())
+                .isRepresentative(i == 0)
+                .build())
+            .toList();
 
-		imageRepository.saveAll(imageEntities);
-		log.info("이미지 정보 저장 완료: classId={}, count={}", classes.getClassId(), imageEntities.size());
-	 * 클래스 상세 조회
-	 *
-	 * @param classId 클래스 ID
-	 * @return dto 반환
-	 */
-	public ClassDetailResponseDto getClassDetail(int classId) {
-		log.info("클래스 상세 조회 시도: classId={}", classId);
-		// 클래스 기본 정보 + 강사 + 카테고리 조회
-		Classes classes = classRepository.findByIdWithDetails(classId)
-				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+        imageRepository.saveAll(imageEntities);
+        log.info("이미지 정보 저장 완료: classId={}, count={}", classes.getClassId(), imageEntities.size());
+    }
 
-		// 해당 클래스의 이미지 리스트 조회
-		List<Images> images = imageRepository.findByClasses_ClassId(classId);
+    /**
+     * 클래스 상세 조회
+     *
+     * @param classId 클래스 ID
+     * @return dto 반환
+     */
 
-		// 해당 클래스의 수업 시간표 조회
-		List<Times> times = timeRepository.findByClasses_ClassId(classId);
+    public ClassDetailResponseDto getClassDetail(int classId) {
+        log.info("클래스 상세 조회 시도: classId={}", classId);
+        // 클래스 기본 정보 + 강사 + 카테고리 조회
+        Classes classes = classRepository.findByIdWithDetails(classId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-		// DTO 변환 및 반환
-		return ClassDetailResponseDto.of(classes, images, times);
-	}
+        // 해당 클래스의 이미지 리스트 조회
+        List<Images> images = imageRepository.findByClasses_ClassId(classId);
+
+        // 해당 클래스의 수업 시간표 조회
+        List<Times> times = timeRepository.findByClasses_ClassId(classId);
+
+        // DTO 변환 및 반환
+        return ClassDetailResponseDto.of(classes, images, times);
+    }
 }
+
