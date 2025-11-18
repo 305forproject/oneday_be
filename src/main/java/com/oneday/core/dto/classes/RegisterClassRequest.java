@@ -73,7 +73,7 @@ public record RegisterClassRequest(
 		LocalTime endTime,
 
 		@NotNull(message = "이미지 정보는 필수입니다")
-		@Size(min = 1, max = 5, message = "이미지는 1개 이상 5개 이하로 등록해야 합니다")
+		@Size(min = 1, max = 8, message = "이미지는 1개 이상 8개 이하로 등록해야 합니다")
 		@Valid
 		List<ImageDto> images
 ) {

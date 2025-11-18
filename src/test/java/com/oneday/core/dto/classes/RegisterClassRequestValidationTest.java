@@ -441,7 +441,7 @@ class RegisterClassRequestValidationTest {
 
 		@Test
 		@DisplayName("가격 음수 - 검증 실패")
-		void negativePric_ViolationOccurs() {
+		void negativePrice_ViolationOccurs() {
 			// given
 			RegisterClassRequest request = new RegisterClassRequest(
 					CategoryType.COOKING_BAKING,

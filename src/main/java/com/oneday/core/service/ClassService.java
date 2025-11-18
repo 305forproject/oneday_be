@@ -301,14 +301,15 @@ public class ClassService {
 	 * 이미지 정보 저장
 	 * <p>
 	 * 첫 번째 이미지를 대표 이미지로 설정합니다.
+	 * 인덱스 기반 스트림을 사용하여 O(n) 성능을 보장합니다.
 	 * </p>
 	 */
 	private void saveImages(Classes classes, List<ImageDto> images) {
-		List<Images> imageEntities = images.stream()
-				.map(imageDto -> Images.builder()
+		List<Images> imageEntities = java.util.stream.IntStream.range(0, images.size())
+				.mapToObj(i -> Images.builder()
 						.classes(classes)
-						.imageUrl(imageDto.imageUrl())
-						.isRepresentative(images.indexOf(imageDto) == 0)
+						.imageUrl(images.get(i).imageUrl())
+						.isRepresentative(i == 0)
 						.build())
 				.toList();
 

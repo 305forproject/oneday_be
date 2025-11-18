@@ -1,5 +1,7 @@
 package com.oneday.core.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -10,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 import com.oneday.core.config.security.UserPrincipal;
 import com.oneday.core.dto.classes.ClassMainResponseDto;
@@ -116,18 +116,27 @@ public class ClassController {
 	 * @return 등록된 클래스 정보
 	 */
 	@PostMapping
-	public ResponseEntity<ApiResponse<RegisterClassResponse>> registerClass(
-			@AuthenticationPrincipal UserPrincipal principal,
-			@Valid @RequestBody RegisterClassRequest request
-	) {
-		log.info("클래스 등록 요청: userId={}, className={}", principal.getId(), request.className());
+    public ResponseEntity<ApiResponse<RegisterClassResponse>> registerClass(
+        @AuthenticationPrincipal UserPrincipal principal,
+        @Valid @RequestBody RegisterClassRequest request
+    ) {
+        log.info("클래스 등록 요청: userId={}, className={}", principal.getId(), request.className());
 
-		RegisterClassResponse response = classService.registerClass(principal.getId(), request);
+        try {
+            RegisterClassResponse response = classService.registerClass(principal.getId(), request);
+            log.info("클래스 등록 완료: classId={}, className={}", response.classId(), response.className());
 
-		log.info("클래스 등록 완료: classId={}, className={}", response.classId(), response.className());
-
-		return ResponseEntity
-				.status(HttpStatus.CREATED)
-				.body(ApiResponse.success(response));
-	}
+            return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(response));
+        } catch (CustomException e) {
+            log.warn("클래스 등록 실패: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getStatus())
+                .body(ApiResponse.error(e.getErrorCode()));
+        } catch (Exception e) {
+            log.error("클래스 등록 중 예상치 못한 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
+        }
+    }
 }
