@@ -10,7 +10,9 @@ import com.oneday.core.dto.category.CategoryResponseDto;
 import com.oneday.core.repository.CategoryRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -24,6 +26,7 @@ public class CategoryService {
 	 * @return dto 반환
 	 */
 	public List<CategoryResponseDto> getAllCategories() {
+		log.info("카테고리 조회 완료: {}개", categories.size());
 		return categoryRepository.findAll().stream()
         	.map(CategoryResponseDto::from)
         	.toList();
