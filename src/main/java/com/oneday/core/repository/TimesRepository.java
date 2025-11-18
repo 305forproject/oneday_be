@@ -41,6 +41,49 @@ public interface TimesRepository extends JpaRepository<Times, Integer> {
 			@Param("confirmedStatusId") int confirmedStatusId
 	);
 
-	List<Times> findByClasses_ClassId(Integer classId);
+	/**
+	 * 특정 클래스의 시간대 중복 체크 (Phase 3 - 클래스 등록)
+	 * <p>
+	 * 새로운 시간대가 기존 시간대와 겹치는지 확인합니다.
+	 * 겹침 조건: (새 시작 < 기존 종료) AND (새 종료 > 기존 시작)
+	 * </p>
+	 *
+	 * @param classId 클래스 ID
+	 * @param startAt 시작 시간
+	 * @param endAt 종료 시간
+	 * @return 겹치는 시간대가 존재하면 true
+	 */
+	@Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END " +
+			"FROM Times t " +
+			"WHERE t.classes.classId = :classId " +
+			"AND t.startAt < :endAt AND t.endAt > :startAt")
+	boolean existsOverlappingTimes(
+			@Param("classId") Integer classId,
+			@Param("startAt") LocalDateTime startAt,
+			@Param("endAt") LocalDateTime endAt
+	);
 
+	/**
+	 * 특정 강사의 시간대 중복 체크 (Phase 4 - 클래스 등록)
+	 * <p>
+	 * 강사의 모든 클래스를 대상으로 시간 중복을 검사합니다.
+	 * 겹침 조건: (새 시작 < 기존 종료) AND (새 종료 > 기존 시작)
+	 * </p>
+	 *
+	 * @param teacherId 강사 ID
+	 * @param startAt   시작 시간
+	 * @param endAt     종료 시간
+	 * @return 겹치는 시간대가 존재하면 true
+	 */
+	@Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END " +
+			"FROM Times t " +
+			"WHERE t.classes.teacher.id = :teacherId " +
+			"AND t.startAt < :endAt AND t.endAt > :startAt")
+	boolean existsOverlappingTimesByTeacher(
+			@Param("teacherId") Long teacherId,
+			@Param("startAt") LocalDateTime startAt,
+			@Param("endAt") LocalDateTime endAt
+	);
+	
+  List<Times> findByClasses_ClassId(Integer classId);
 }

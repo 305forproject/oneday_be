@@ -31,7 +31,17 @@ public enum ErrorCode {
     INVALID_TOKEN(401, "AUTH003", "유효하지 않은 토큰입니다"),
     EXPIRED_TOKEN(401, "AUTH004", "만료된 토큰입니다"),
     USER_NOT_FOUND(404, "AUTH005", "사용자를 찾을 수 없습니다"),
-    INVALID_REFRESH_TOKEN(401, "AUTH006", "유효하지 않은 리프레시 토큰입니다");
+    INVALID_REFRESH_TOKEN(401, "AUTH006", "유효하지 않은 리프레시 토큰입니다"),
+
+    // 클래스 등록 관련 에러 (CL001~CL008)
+    CATEGORY_NOT_FOUND(404, "CL001", "존재하지 않는 카테고리입니다"),
+    INVALID_CLASS_TIME(400, "CL002", "유효하지 않은 클래스 시간입니다"),
+    DUPLICATE_CLASS_TIME(409, "CL003", "이미 등록된 시간대입니다"),
+    INVALID_IMAGE(400, "CL004", "유효하지 않은 이미지입니다"),
+    INVALID_CLASS_NAME(400, "CL005", "유효하지 않은 클래스명입니다"),
+    INVALID_PRICE(400, "CL006", "유효하지 않은 가격입니다"),
+    INVALID_DESCRIPTION(400, "CL007", "유효하지 않은 설명입니다"),
+    CLASS_NOT_FOUND(404, "CL008", "존재하지 않는 클래스입니다");
 
     private final int status;
     private final String code;
