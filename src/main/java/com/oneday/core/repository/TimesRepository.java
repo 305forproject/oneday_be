@@ -84,5 +84,6 @@ public interface TimesRepository extends JpaRepository<Times, Integer> {
 			@Param("startAt") LocalDateTime startAt,
 			@Param("endAt") LocalDateTime endAt
 	);
-
+	
+  List<Times> findByClasses_ClassId(Integer classId);
 }

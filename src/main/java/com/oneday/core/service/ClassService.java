@@ -1,5 +1,6 @@
 package com.oneday.core.service;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.oneday.core.dto.classes.ClassDetailResponseDto;
 import com.oneday.core.dto.classes.ClassMainResponseDto;
 import com.oneday.core.dto.classes.ImageDto;
 import com.oneday.core.dto.classes.RegisterClassRequest;
@@ -51,6 +53,7 @@ public class ClassService {
 		return classRepository.findById(classId)
 				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다."));
 	}
+	private final TimesRepository timeRepository;
 
 	/**
 	 * 모든 클래스 조회
@@ -81,19 +84,34 @@ public class ClassService {
 	}
 
 	/**
-	 * 키워드로 클래스 검색
+	 * 검색
 	 *
-	 * @param keyword 검색어
+	 * @param keyword    검색어
+	 * @param categoryId 카테고리 ID
+	 * @param sortKey    정렬 기준
 	 * @return dto 반환
 	 */
-	public List<ClassMainResponseDto> searchClasses(String keyword) {
+	public List<ClassMainResponseDto> getClasses(Integer categoryId, String keyword, String sortKey) {
 
-		log.info("클래스 검색 시도: keyword={}", keyword);
-        
-        // 키워드로 클래스 목록 조회
-        List<Classes> searchResults = classRepository.searchByKeyword(keyword);
-        
-        log.info("클래스 검색 완료: 검색 결과 {}건", searchResults.size());
+		log.info("클래스 조회 시도: categoryId={}, keyword={}, sortKey={}", categoryId, keyword, sortKey);
+
+		// 정렬(Sort) 조건 생성
+		Sort sort = Sort.by(Sort.Direction.DESC, "classId"); // 기본: 최신 등록순
+		if ("price_asc".equals(sortKey)) {
+			sort = Sort.by(Sort.Direction.ASC, "price");
+		} else if ("price_desc".equals(sortKey)) {
+			sort = Sort.by(Sort.Direction.DESC, "price");
+		}
+		// 하고 싶은 정렬 있으면 추가하기
+
+		// 검색 조건에 맞는 클래스 목록 조회
+		List<Classes> searchResults = classRepository.findAllByConditions(
+				categoryId,
+				keyword,
+				sort
+		);
+
+		log.info("클래스 조회 완료: 조회 결과 {}건", searchResults.size());
 
 		if (searchResults.isEmpty()) {
 			return Collections.emptyList();
@@ -315,5 +333,24 @@ public class ClassService {
 
 		imageRepository.saveAll(imageEntities);
 		log.info("이미지 정보 저장 완료: classId={}, count={}", classes.getClassId(), imageEntities.size());
+	 * 클래스 상세 조회
+	 *
+	 * @param classId 클래스 ID
+	 * @return dto 반환
+	 */
+	public ClassDetailResponseDto getClassDetail(int classId) {
+		log.info("클래스 상세 조회 시도: classId={}", classId);
+		// 클래스 기본 정보 + 강사 + 카테고리 조회
+		Classes classes = classRepository.findByIdWithDetails(classId)
+				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+		// 해당 클래스의 이미지 리스트 조회
+		List<Images> images = imageRepository.findByClasses_ClassId(classId);
+
+		// 해당 클래스의 수업 시간표 조회
+		List<Times> times = timeRepository.findByClasses_ClassId(classId);
+
+		// DTO 변환 및 반환
+		return ClassDetailResponseDto.of(classes, images, times);
 	}
 }

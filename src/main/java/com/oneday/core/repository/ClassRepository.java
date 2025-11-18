@@ -1,7 +1,9 @@
 package com.oneday.core.repository;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,11 +21,29 @@ public interface ClassRepository extends JpaRepository<Classes, Integer> {
 	List<Classes> findAllWithTeacherAndCategory();
 
 	/**
-	 * 검색어가 클래스 이름이나 강사 이름에 포함된 목록 조회
+	 * 카테고리, 정렬, 검색어
+	 * @param categoryId 카테고리 ID
+	 * @param keyword 검색어
+	 * @param sort 정렬 기준
+	 * @return 검색 결과
 	 */
 	@Query("SELECT c FROM Classes c " +
 			"JOIN FETCH c.teacher " +
 			"JOIN FETCH c.category " +
-			"WHERE c.className LIKE CONCAT('%', :keyword, '%') OR c.teacher.name LIKE CONCAT('%', :keyword, '%')")
-	List<Classes> searchByKeyword(@Param("keyword") String keyword);
+			"WHERE (:categoryId IS NULL OR c.category.categoryId = :categoryId) " +
+			"AND (:keyword IS NULL OR c.className LIKE CONCAT('%', :keyword, '%') OR c.teacher.name LIKE CONCAT('%', :keyword, '%'))")
+	List<Classes> findAllByConditions(
+			@Param("categoryId") Integer categoryId,
+			@Param("keyword") String keyword,
+			Sort sort
+	);
+
+	/**
+	 * 클래스 + 강사 + 카테고리 한 번에 조회
+	 */
+	@Query("SELECT c FROM Classes c " +
+			"JOIN FETCH c.teacher " +
+			"JOIN FETCH c.category " +
+			"WHERE c.classId = :classId")
+	Optional<Classes> findByIdWithDetails(@Param("classId") Integer classId);
 }
