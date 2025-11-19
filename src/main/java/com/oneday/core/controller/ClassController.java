@@ -92,37 +92,37 @@ public class ClassController {
 
 	/**
 	 * 클래스 등록
-	 * <p>
-	 * 인증된 사용자가 새로운 클래스를 등록합니다.
-	 * 다중 날짜 선택을 지원하며, 동일한 시간대에 여러 날짜를 한 번에 등록할 수 있습니다.
-	 * </p>
 	 *
-	 * @param principal 인증된 사용자 정보 (JWT에서 추출)
-	 * @param request   클래스 등록 요청 정보
+	 * @param principal 인증된 사용자 정보
+	 * @param request 클래스 등록 요청
+	 * @param imageFiles 이미지 파일 배열
+	 * @param primaryImageIndex 대표 이미지 인덱스
 	 * @return 등록된 클래스 정보
 	 */
-	@PostMapping
-    public ResponseEntity<ApiResponse<RegisterClassResponse>> registerClass(
-        @AuthenticationPrincipal UserPrincipal principal,
-        @Valid @RequestBody RegisterClassRequest request
-    ) {
-        log.info("클래스 등록 요청: userId={}, className={}", principal.getId(), request.className());
+	@PostMapping(consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<ApiResponse<RegisterClassResponse>> registerClass(
+		@AuthenticationPrincipal UserPrincipal principal,
+		@Valid @org.springframework.web.bind.annotation.ModelAttribute RegisterClassRequest request,
+		@org.springframework.web.bind.annotation.RequestParam("imageFiles") org.springframework.web.multipart.MultipartFile[] imageFiles,
+		@org.springframework.web.bind.annotation.RequestParam("primaryImageIndex") int primaryImageIndex
+	) {
+		log.info("클래스 등록 요청: userId={}, className={}, imageCount={}", 
+			principal.getId(), request.className(), imageFiles.length);
 
-        try {
-            RegisterClassResponse response = classService.registerClass(principal.getId(), request);
-            log.info("클래스 등록 완료: classId={}, className={}", response.classId(), response.className());
-
-            return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(response));
-        } catch (CustomException e) {
-            log.warn("클래스 등록 실패: {}", e.getMessage());
-            return ResponseEntity.status(e.getErrorCode().getStatus())
-                .body(ApiResponse.error(e.getErrorCode()));
-        } catch (Exception e) {
-            log.error("클래스 등록 중 예상치 못한 오류 발생", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
-        }
-    }
+		try {
+			RegisterClassResponse response = classService.registerClass(
+				principal.getId(), request, imageFiles, primaryImageIndex);
+			
+			return ResponseEntity.status(HttpStatus.CREATED)
+				.body(ApiResponse.success(response));
+		} catch (CustomException e) {
+			log.warn("클래스 등록 실패: {}", e.getMessage());
+			return ResponseEntity.status(e.getErrorCode().getStatus())
+				.body(ApiResponse.error(e.getErrorCode()));
+		} catch (Exception e) {
+			log.error("클래스 등록 중 오류 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
+		}
+	}
 }

@@ -15,6 +15,7 @@ import com.oneday.core.dto.classes.ClassMainResponseDto;
 import com.oneday.core.dto.classes.ImageDto;
 import com.oneday.core.dto.classes.RegisterClassRequest;
 import com.oneday.core.dto.classes.RegisterClassResponse;
+import com.oneday.core.dto.common.CoordinateDto;
 import com.oneday.core.entity.Categories;
 import com.oneday.core.entity.Classes;
 import com.oneday.core.entity.Images;
@@ -48,6 +49,8 @@ public class ClassService {
 	private final CategoriesRepository categoriesRepository;
 	private final TimesRepository timesRepository;
 	private final UserRepository userRepository;
+	private final KakaoMapService kakaoMapService;
+	private final ImageService imageService;
 
 	public Classes getClassById(int classId) {
 		return classRepository.findById(classId)
@@ -144,26 +147,24 @@ public class ClassService {
 	 * 클래스 등록
 	 * <p>
 	 * 1. 사용자 조회<br/>
-	 * 2. 카테고리 존재 여부 확인<br/>
-	 * 3. 시간 유효성 검증<br/>
-	 * 4. 시간 중복 검증 (강사의 모든 클래스 대상)<br/>
-	 * 5. 이미지 개수 검증<br/>
+	 * 2. 카테고리 검증<br/>
+	 * 3. 좌표 변환 (Kakao Map API)<br/>
+	 * 4. 시간 검증<br/>
+	 * 5. 시간 중복 검증<br/>
 	 * 6. 클래스 저장<br/>
-	 * 7. 시간 정보 저장 (다중 날짜)<br/>
-	 * 8. 이미지 정보 저장 (첫 번째 이미지를 대표 이미지로 설정)
+	 * 7. 이미지 업로드 및 저장<br/>
+	 * 8. 시간 정보 저장
 	 * </p>
 	 *
-	 * @param userId  인증된 사용자 ID
-	 * @param request 클래스 등록 요청 정보
+	 * @param userId 인증된 사용자 ID
+	 * @param request 클래스 등록 요청
+	 * @param imageFiles 이미지 파일 배열
+	 * @param primaryImageIndex 대표 이미지 인덱스
 	 * @return 등록된 클래스 정보
-	 * @throws CustomException                사용자를 찾을 수 없는 경우
-	 * @throws CategoryNotFoundException      존재하지 않는 카테고리
-	 * @throws InvalidClassTimeException      유효하지 않은 시간 정보
-	 * @throws DuplicateClassTimeException    시간 중복
-	 * @throws InvalidImageException          유효하지 않은 이미지 정보
 	 */
 	@Transactional
-	public RegisterClassResponse registerClass(Long userId, RegisterClassRequest request) {
+	public RegisterClassResponse registerClass(Long userId, RegisterClassRequest request, 
+			org.springframework.web.multipart.MultipartFile[] imageFiles, int primaryImageIndex) {
 		log.info("클래스 등록 시작: userId={}, className={}", userId, request.className());
 
 		// 1. 사용자 조회
@@ -176,23 +177,33 @@ public class ClassService {
 		// 2. 카테고리 검증
 		Categories category = validateCategory(request.category().getKoreanName());
 
-		// 2. 시간 유효성 검증
+		// 3. 주소를 통한 좌표 변환 (Kakao Map API)
+		CoordinateDto coordinates = null;
+		if (request.location() != null && !request.location().trim().isEmpty()) {
+			coordinates = kakaoMapService.getCoordinatesFromAddress(request.location());
+			if (coordinates != null) {
+				log.info("좌표 변환 성공: location={}, latitude={}, longitude={}", 
+						request.location(), coordinates.latitude(), coordinates.longitude());
+			} else {
+				log.warn("좌표 변환 실패: location={}, 기본값 사용", request.location());
+			}
+		}
+
+		// 4. 시간 유효성 검증
 		validateTime(request.startTime(), request.endTime());
 
-		// 3. 시간 중복 검증 (모든 날짜에 대해)
+		// 5. 시간 중복 검증 (모든 날짜에 대해)
 		validateTimeOverlap(teacher.getId(), request.dates(), request.startTime(), request.endTime());
 
-		// 4. 이미지 검증
-		validateImages(request.images());
+		// 6. 클래스 저장 (좌표 포함)
+		Classes savedClass = saveClass(teacher, category, request, coordinates);
 
-		// 5. 클래스 저장
-		Classes savedClass = saveClass(teacher, category, request);
+		// 7. 이미지 업로드 및 저장
+		List<String> imageUrls = imageService.uploadImages(imageFiles, savedClass.getClassId(), primaryImageIndex);
+		saveImages(savedClass, imageUrls, primaryImageIndex);
 
-		// 6. 시간 정보 저장 (다중 날짜)
+		// 8. 시간 정보 저장 (다중 날짜)
 		saveTimes(savedClass, request.dates(), request.startTime(), request.endTime());
-
-		// 7. 이미지 정보 저장
-		saveImages(savedClass, request.images());
 
 		log.info("클래스 등록 완료: classId={}, className={}", savedClass.getClassId(), savedClass.getClassName());
 
@@ -259,23 +270,20 @@ public class ClassService {
 		}
 	}
 
-	/**
-	 * 이미지 검증
-	 * <p>
-	 * 이미지 개수가 1~5개 범위인지 확인합니다.
-	 * </p>
-	 */
-	private void validateImages(List<ImageDto> images) {
-		if (images.size() < 1 || images.size() > 5) {
-			log.warn("유효하지 않은 이미지 개수: size={}", images.size());
-			throw new InvalidImageException("이미지는 1개 이상 5개 이하로 등록해야 합니다");
-		}
-	}
+
 
 	/**
 	 * 클래스 엔티티 저장
+	 * <p>
+	 * Kakao Map API로 변환된 좌표를 우선 사용하고,
+	 * 실패 시 요청에 포함된 좌표를 사용합니다.
+	 * </p>
 	 */
-	private Classes saveClass(User teacher, Categories category, RegisterClassRequest request) {
+	private Classes saveClass(User teacher, Categories category, RegisterClassRequest request, CoordinateDto coordinates) {
+		// 좌표 우선순위: Kakao API 변환 결과 > 요청 데이터
+		String finalLatitude = (coordinates != null) ? coordinates.latitude() : request.latitude();
+		String finalLongitude = (coordinates != null) ? coordinates.longitude() : request.longitude();
+		
 		Classes classes = Classes.builder()
 				.teacher(teacher)
 				.category(category)
@@ -285,8 +293,8 @@ public class ClassService {
 				.included(request.included())
 				.required(request.required())
 				.location(request.location())
-				.longitude(request.longitude())
-				.latitude(request.latitude())
+				.longitude(finalLongitude)
+				.latitude(finalLatitude)
 				.zipcode(request.zipcode())
 				.maxCapacity(request.maxCapacity())
 				.price(request.price())
@@ -317,23 +325,19 @@ public class ClassService {
 
 	/**
 	 * 이미지 정보 저장
-	 * <p>
-	 * 첫 번째 이미지를 대표 이미지로 설정합니다.
-	 * 인덱스 기반 스트림을 사용하여 O(n) 성능을 보장합니다.
-	 * </p>
 	 */
-    private void saveImages(Classes classes, List<ImageDto> images) {
-        List<Images> imageEntities = java.util.stream.IntStream.range(0, images.size())
-            .mapToObj(i -> Images.builder()
-                .classes(classes)
-                .imageUrl(images.get(i).imageUrl())
-                .isRepresentative(i == 0)
-                .build())
-            .toList();
+	private void saveImages(Classes classes, List<String> imageUrls, int primaryIndex) {
+		List<Images> imageEntities = java.util.stream.IntStream.range(0, imageUrls.size())
+			.mapToObj(i -> Images.builder()
+				.classes(classes)
+				.imageUrl(imageUrls.get(i))
+				.isRepresentative(i == primaryIndex)
+				.build())
+			.toList();
 
-        imageRepository.saveAll(imageEntities);
-        log.info("이미지 정보 저장 완료: classId={}, count={}", classes.getClassId(), imageEntities.size());
-    }
+		imageRepository.saveAll(imageEntities);
+		log.info("이미지 정보 저장 완료: classId={}, count={}", classes.getClassId(), imageEntities.size());
+	}
 
     /**
      * 클래스 상세 조회
