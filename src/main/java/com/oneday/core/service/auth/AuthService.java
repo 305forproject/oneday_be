@@ -114,8 +114,14 @@ public class AuthService {
 
         log.info("로그인 성공: email={}", request.email());
 
-        // 5. 응답 반환
-        return new LoginResponse(accessToken, refreshToken);
+        // 5. 응답 반환 (사용자 정보 포함)
+        return new LoginResponse(
+            accessToken,
+            refreshToken,
+            user.getId(),
+            user.getEmail(),
+            user.getName()
+        );
     }
 
     /**
