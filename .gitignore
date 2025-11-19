@@ -42,7 +42,7 @@ mysql-data/
 ### Environment ###
 .env
 
-application.properties
+application.yml
 application-*.properties
 application.yml
 application-*.yml
