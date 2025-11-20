@@ -66,8 +66,8 @@ public class SecurityConfig {
 
             // 요청 권한 설정
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh")
-                .permitAll()  // 회원가입, 로그인, 토큰 갱신은 인증 불필요
+                .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout")
+                .permitAll()  // 회원가입, 로그인, 토큰 갱신, 로그아웃은 인증 불필요
                 .requestMatchers("/api/classes", "/api/classes/**")
                 .permitAll()  // 클래스 조회는 인증 불필요
                 .requestMatchers("/api/categories", "/api/categories/**")

@@ -35,6 +35,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
 
+        // 로그아웃 요청은 JWT 검증 건너뛰기 (만료된 토큰으로도 로그아웃 가능)
+        String requestURI = request.getRequestURI();
+        if ("/api/auth/logout".equals(requestURI)) {
+            log.debug("로그아웃 요청 - JWT 검증 건너뛰기");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             String token = extractTokenFromRequest(request);
 

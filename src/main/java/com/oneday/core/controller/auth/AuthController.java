@@ -85,13 +85,22 @@ public class AuthController {
 	/**
 	 * 로그아웃 API
 	 * 인증된 사용자의 Refresh Token을 무효화합니다
+	 * JWT가 없거나 만료된 경우에도 정상 응답을 반환합니다 (클라이언트 측 로그아웃 지원)
 	 *
-	 * @param userDetails Spring Security가 자동 주입
+	 * @param userDetails Spring Security가 자동 주입 (JWT가 없으면 null)
 	 * @return 로그아웃 응답
 	 */
 	@PostMapping("/logout")
 	public ResponseEntity<ApiResponse<LogoutResponse>> logout(
 			@AuthenticationPrincipal UserDetails userDetails) {
+
+		// JWT가 없거나 만료된 경우 (이미 로그아웃 상태)
+		if (userDetails == null) {
+			log.info("로그아웃 API 호출: 이미 로그아웃 상태 또는 JWT 없음");
+			return ResponseEntity.ok(
+				ApiResponse.success(new LogoutResponse("로그아웃되었습니다"))
+			);
+		}
 
 		String email = userDetails.getUsername();
 		log.info("로그아웃 API 호출: email={}", email);
