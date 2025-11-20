@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ReservationService {
 	private static final Integer CONFIRMED = 1; // "예약 확정"
-	private static final Integer CANCELLED = 2; // "예약 취소"
+	private static final Integer CANCELLED = 3; // "예약 취소"
 	private final ReservationRepository reservationRepository;
 	private final TimesRepository timesRepository;
 	private final ReservationStatusRepository reservationStatusRepository;
@@ -120,7 +120,7 @@ public class ReservationService {
 
 	/**
  	* 학생의 '내 예약 목록'을 '예정된'/'지난'으로 분리하여 조회
- 	* 
+ 	*
  	* @param studentId 조회할 학생의 ID
  	* @return 예정된 예약 목록과 지난 예약 목록을 담은 응답 DTO
  	*/

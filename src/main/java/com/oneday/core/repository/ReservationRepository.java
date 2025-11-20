@@ -43,7 +43,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 
 	/**
  	* 학생 ID를 기준으로 예약 목록 전체를 DTO 조회
- 	* 
+ 	*
  	* @param studentId 조회할 학생의 ID
  	* @return 학생의 전체 예약 목록 (최신순 정렬)
  	*/
@@ -51,7 +51,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 			"c.classId, c.className, c.location, c.longitude, c.latitude, c.price, " +
 			"t.timeId, t.startAt, t.endAt, " +
 			"teacher.name, teacher.email, " +
-			"s.statusName) " +
+			"r.reservationId , s.statusCode, s.statusName) " +
 			"FROM Reservation r " +
 			"JOIN r.user student " +
 			"JOIN r.status s " +

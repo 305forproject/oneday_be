@@ -26,5 +26,7 @@ public class StudentReservationDto {
 	private String teacherEmail;
 
 	// ReservationStatus
+	private Integer reservationId;
+	private Integer statusCode;
 	private String statusName;
 }
