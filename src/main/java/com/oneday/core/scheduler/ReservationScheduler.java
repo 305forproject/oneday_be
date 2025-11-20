@@ -35,7 +35,6 @@ public class ReservationScheduler {
 
 		LocalDateTime now = LocalDateTime.now();
 
-		// Repository의 쿼리는 변경할 필요가 없습니다. (Entity를 파라미터로 그대로 받음)
 		int updatedCount = reservationRepository.updateStatusForCompletedClasses(
 				reservedStatus,
 				completedStatus,
