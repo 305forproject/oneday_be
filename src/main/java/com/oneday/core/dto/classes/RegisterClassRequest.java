@@ -1,7 +1,5 @@
 package com.oneday.core.dto.classes;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
 import com.oneday.core.entity.CategoryType;
@@ -16,7 +14,7 @@ import jakarta.validation.constraints.Size;
  * 클래스 등록 요청 DTO
  * <p>
  * 클래스 등록에 필요한 모든 정보를 전달합니다.
- * 다중 날짜 선택을 지원합니다.
+ * 날짜별 시간 정보를 schedules 리스트로 전달합니다.
  * </p>
  *
  * @author zionge2k
@@ -62,14 +60,9 @@ public record RegisterClassRequest(
 		@Min(value = 0, message = "가격은 0원 이상이어야 합니다")
 		Integer price,
 
-		@NotNull(message = "날짜 정보는 필수입니다")
-		@Size(min = 1, message = "최소 1개 이상의 날짜를 선택해야 합니다")
-		List<LocalDate> dates,
-
-		@NotNull(message = "시작 시간은 필수입니다")
-		LocalTime startTime,
-
-		@NotNull(message = "종료 시간은 필수입니다")
-		LocalTime endTime
+		@NotNull(message = "일정 정보는 필수입니다")
+		@Size(min = 1, message = "최소 1개 이상의 일정을 추가해야 합니다")
+		@Valid
+		List<TimeSlotDto> schedules
 ) {
 }

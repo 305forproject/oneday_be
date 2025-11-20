@@ -189,11 +189,11 @@ public class ClassService {
 			}
 		}
 
-		// 4. 시간 유효성 검증
-		validateTime(request.startTime(), request.endTime());
+		// 4. 일정 유효성 검증 (각 일정별 시간 검증)
+		validateSchedules(request.schedules());
 
-		// 5. 시간 중복 검증 (모든 날짜에 대해)
-		validateTimeOverlap(teacher.getId(), request.dates(), request.startTime(), request.endTime());
+		// 5. 시간 중복 검증 (모든 일정에 대해)
+		validateScheduleOverlap(teacher.getId(), request.schedules());
 
 		// 6. 클래스 저장 (좌표 포함)
 		Classes savedClass = saveClass(teacher, category, request, coordinates);
@@ -202,8 +202,8 @@ public class ClassService {
 		List<String> imageUrls = imageService.uploadImages(imageFiles, savedClass.getClassId(), primaryImageIndex);
 		saveImages(savedClass, imageUrls, primaryImageIndex);
 
-		// 8. 시간 정보 저장 (다중 날짜)
-		saveTimes(savedClass, request.dates(), request.startTime(), request.endTime());
+		// 8. 시간 정보 저장 (일정별)
+		saveTimes(savedClass, request.schedules());
 
 		log.info("클래스 등록 완료: classId={}, className={}", savedClass.getClassId(), savedClass.getClassName());
 
@@ -229,42 +229,39 @@ public class ClassService {
 	}
 
 	/**
-	 * 시간 유효성 검증
+	 * 일정 유효성 검증
 	 * <p>
-	 * 시작 시간이 종료 시간보다 이른지 확인합니다.
+	 * 각 일정의 시작 시간이 종료 시간보다 이른지 확인합니다.
 	 * </p>
 	 */
-	private void validateTime(java.time.LocalTime startTime, java.time.LocalTime endTime) {
-		if (startTime == null || endTime == null || !startTime.isBefore(endTime)) {
-			log.warn("유효하지 않은 시간 정보: startTime={}, endTime={}", startTime, endTime);
-			throw new InvalidClassTimeException("시작 시간은 종료 시간보다 이전이어야 합니다");
+	private void validateSchedules(List<com.oneday.core.dto.classes.TimeSlotDto> schedules) {
+		for (com.oneday.core.dto.classes.TimeSlotDto schedule : schedules) {
+			if (!schedule.startTime().isBefore(schedule.endTime())) {
+				throw new InvalidClassTimeException(
+					String.format("시작 시간(%s)은 종료 시간(%s)보다 빨라야 합니다", 
+						schedule.startTime(), schedule.endTime())
+				);
+			}
 		}
 	}
 
 	/**
-	 * 시간 중복 검증 (다중 날짜)
+	 * 일정 중복 검증
 	 * <p>
 	 * 강사의 기존 클래스와 시간이 겹치는지 확인합니다.
-	 * 모든 날짜에 대해 중복을 검사합니다.
+	 * 모든 일정에 대해 중복을 검사합니다.
 	 * </p>
 	 */
-	private void validateTimeOverlap(Long teacherId, List<java.time.LocalDate> dates,
-									  java.time.LocalTime startTime, java.time.LocalTime endTime) {
-		for (java.time.LocalDate date : dates) {
-			LocalDateTime startAt = LocalDateTime.of(date, startTime);
-			LocalDateTime endAt = LocalDateTime.of(date, endTime);
+	private void validateScheduleOverlap(Long teacherId, List<com.oneday.core.dto.classes.TimeSlotDto> schedules) {
+		for (com.oneday.core.dto.classes.TimeSlotDto schedule : schedules) {
+			LocalDateTime startAt = LocalDateTime.of(schedule.date(), schedule.startTime());
+			LocalDateTime endAt = LocalDateTime.of(schedule.date(), schedule.endTime());
 
-			boolean isOverlapping = timesRepository.existsOverlappingTimesByTeacher(
-					teacherId,
-					startAt,
-					endAt
-			);
-
-			if (isOverlapping) {
-				log.warn("시간 중복 발생: teacherId={}, date={}, startTime={}, endTime={}",
-						teacherId, date, startTime, endTime);
+			boolean hasOverlap = timesRepository.existsOverlappingTimesByTeacher(teacherId, startAt, endAt);
+			if (hasOverlap) {
 				throw new DuplicateClassTimeException(
-						String.format("이미 등록된 시간대입니다: %s %s ~ %s", date, startTime, endTime)
+					String.format("%s %s~%s 시간에 이미 등록된 클래스가 있습니다", 
+						schedule.date(), schedule.startTime(), schedule.endTime())
 				);
 			}
 		}
@@ -304,23 +301,22 @@ public class ClassService {
 	}
 
 	/**
-	 * 시간 정보 저장 (다중 날짜)
+	 * 시간 정보 저장 (일정별)
 	 * <p>
-	 * 선택된 모든 날짜에 대해 Times 엔티티를 생성합니다.
+	 * 각 일정(날짜+시간 조합)에 대해 Times 엔티티를 생성합니다.
 	 * </p>
 	 */
-	private void saveTimes(Classes classes, List<java.time.LocalDate> dates,
-						   java.time.LocalTime startTime, java.time.LocalTime endTime) {
-		List<Times> timeEntities = dates.stream()
-				.map(date -> Times.builder()
-						.classes(classes)
-						.startAt(LocalDateTime.of(date, startTime))
-						.endAt(LocalDateTime.of(date, endTime))
-						.build())
-				.toList();
+	private void saveTimes(Classes classes, List<com.oneday.core.dto.classes.TimeSlotDto> schedules) {
+		List<Times> timesList = schedules.stream()
+			.map(schedule -> Times.builder()
+				.classes(classes)
+				.startAt(java.time.LocalDateTime.of(schedule.date(), schedule.startTime()))
+				.endAt(java.time.LocalDateTime.of(schedule.date(), schedule.endTime()))
+				.build())
+			.collect(Collectors.toList());
 
-		timesRepository.saveAll(timeEntities);
-		log.info("시간 정보 저장 완료: classId={}, count={}", classes.getClassId(), timeEntities.size());
+		timesRepository.saveAll(timesList);
+		log.info("시간 정보 저장 완료: {}개 일정", timesList.size());
 	}
 
 	/**
