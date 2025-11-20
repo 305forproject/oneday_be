@@ -77,7 +77,7 @@ public class ReservationController {
 	 * @param principal 인증된 사용자 정보
 	 */
 	@PatchMapping("/{reservationId}/cancel")
-	public ResponseEntity<ApiResponse<Reservation>> cancelReservation(
+	public ResponseEntity<ApiResponse<String>> cancelReservation(
 			@PathVariable int reservationId,
 			@AuthenticationPrincipal UserPrincipal principal) {
 
@@ -87,19 +87,20 @@ public class ReservationController {
 		}
 
 		long studentId = principal.getId();
-		log.info("인증된 사용자 ID: {}", studentId);
 
 		try {
-			Reservation cancelledReservation = reservationService.cancelReservation(reservationId, studentId);
+			// 서비스가 Reservation을 반환하더라도, 컨트롤러에서는 무시하거나 필요한 값만 뺍니다.
+			reservationService.cancelReservation(reservationId, studentId);
 
-			return ResponseEntity.ok(ApiResponse.success(cancelledReservation));
+			// ✅ 엔티티를 직접 리턴하지 말고, 성공 메시지를 보냅니다.
+			return ResponseEntity.ok(ApiResponse.success("예약이 성공적으로 취소되었습니다."));
 
 		} catch (CustomException e) {
 			log.warn("예약 취소 실패: {}", e.getMessage());
 			return ResponseEntity.status(e.getErrorCode().getStatus())
 					.body(ApiResponse.error(e.getErrorCode()));
 		} catch (Exception e) {
-			log.error("예약 취소 중 예상치 못한 오류 발생", e);
+			log.error("예약 취소 중 오류", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
 		}

@@ -41,10 +41,10 @@ mysql-data/
 
 ### Environment ###
 .env
+/uploads/
 
 application.yml
 application-*.properties
-application.yml
 application-*.yml
 
 
