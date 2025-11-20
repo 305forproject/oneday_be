@@ -14,6 +14,8 @@ import com.oneday.core.entity.Reservation;
 import com.oneday.core.entity.ReservationStatus;
 import com.oneday.core.entity.Times;
 import com.oneday.core.entity.User;
+import com.oneday.core.exception.CustomException;
+import com.oneday.core.exception.ErrorCode;
 import com.oneday.core.repository.ReservationRepository;
 import com.oneday.core.repository.ReservationStatusRepository;
 import com.oneday.core.repository.TimesRepository;
@@ -45,30 +47,38 @@ public class ReservationService {
 	 */
 	public Reservation createReservation(int timeId, long studentId) {
 
+		// 1. 사용자 조회 (없으면 404)
 		User targetUser = userRepository.findById(studentId)
-				.orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+		// 2. 강의 시간 조회 (없으면 404)
 		Times targetTime = timesRepository.findById(timeId)
-				.orElseThrow(() -> new RuntimeException("존재하지 않는 강의 시간입니다."));
+				.orElseThrow(() -> new CustomException(ErrorCode.CLASS_NOT_FOUND));
 
-		if ((reservationRepository.existsByUser_IdAndTime_TimeIdAndStatus_StatusCode(
+		// 3. 중복 예약 체크 (이미 결제 전 단계에서 했지만, 더블 체크)
+		// -> 만약 그 사이에 중복이 발생했다면 409 Conflict 발생
+		if (reservationRepository.existsByUser_IdAndTime_TimeIdAndStatus_StatusCode(
 				studentId,
 				timeId,
-				CONFIRMED))) {
-			throw new RuntimeException("이미 예약한 강의입니다.");
+				CONFIRMED)) {
+			throw new CustomException(ErrorCode.DUPLICATE_RESERVATION);
 		}
 
+		// 4. 정원 체크 (가장 중요)
+		// -> 결제하고 들어왔는데 그 찰나에 자리가 다 찼으면 여기서 막아야 함
 		long currentCount = reservationRepository.countByTime_TimeIdAndStatus_StatusCode(
 				timeId,
 				CONFIRMED
 		);
 
 		if (currentCount >= targetTime.getClasses().getMaxCapacity()) {
-			throw new RuntimeException("정원이 모두 마감되었습니다.");
+			throw new CustomException(ErrorCode.CLASS_CAPACITY_EXCEEDED);
 		}
 
+		// 5. 예약 상태 조회 (시스템 에러에 가까움)
 		ReservationStatus confirmedStatus = reservationStatusRepository.findById(CONFIRMED)
-				.orElseThrow(() -> new RuntimeException("예약 상태 코드(ID: " + CONFIRMED + ")를 찾을 수 없습니다."));
+				.orElseThrow(() -> new CustomException(ErrorCode.INTERNAL_SERVER_ERROR));
+		// 혹은 ErrorCode.NOT_FOUND 같은 걸 써도 됩니다.
 
 		Reservation newReservation = Reservation.builder()
 				.user(targetUser)
