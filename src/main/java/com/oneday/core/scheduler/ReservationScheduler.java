@@ -20,8 +20,8 @@ public class ReservationScheduler {
 	private final ReservationRepository reservationRepository;
 	private final ReservationStatusRepository reservationStatusRepository;
 
-	public static final Integer RESERVED = 1;       // 예약 완료
-	public static final Integer CLASS_COMPLETED = 4; // 수강 완료
+	public static final Integer CONFIRMED = 1;       // 예약 완료
+	public static final Integer COMPLETED = 4; // 수강 완료
 
 	@Scheduled(cron = "0 0/30 * * * *")
 	@Transactional
@@ -30,8 +30,8 @@ public class ReservationScheduler {
 
 		// [변경 포인트 1] 상수 사용 & DB 조회 없이 프록시 객체만 획득
 		// getReferenceById는 실제 DB를 조회하지 않고, ID값만 가진 가짜 객체(Proxy)를 즉시 반환합니다.
-		ReservationStatus reservedStatus = reservationStatusRepository.getReferenceById(RESERVED);
-		ReservationStatus completedStatus = reservationStatusRepository.getReferenceById(CLASS_COMPLETED);
+		ReservationStatus reservedStatus = reservationStatusRepository.getReferenceById(CONFIRMED);
+		ReservationStatus completedStatus = reservationStatusRepository.getReferenceById(COMPLETED);
 
 		LocalDateTime now = LocalDateTime.now();
 
