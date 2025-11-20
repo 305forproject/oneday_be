@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 @Getter
 @AllArgsConstructor
 public class TeacherScheduleDto {
@@ -19,8 +21,11 @@ public class TeacherScheduleDto {
 	private Integer maxCapacity;
 	// Times
 	private Integer timeId;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
 	private LocalDateTime startAt;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
 	private LocalDateTime endAt;
+
 	// Calculate
 	@Setter
 	private long confirmedStudentCount;

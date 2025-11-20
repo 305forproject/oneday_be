@@ -41,9 +41,13 @@ public enum ErrorCode {
     INVALID_CLASS_NAME(400, "CL005", "유효하지 않은 클래스명입니다"),
     INVALID_PRICE(400, "CL006", "유효하지 않은 가격입니다"),
     INVALID_DESCRIPTION(400, "CL007", "유효하지 않은 설명입니다"),
-    CLASS_NOT_FOUND(404, "CL008", "존재하지 않는 클래스입니다");
+    CLASS_NOT_FOUND(404, "CL008", "존재하지 않는 클래스입니다"),
 
-    private final int status;
+	//예약 관련
+	DUPLICATE_RESERVATION(409, "RS001", "이미 예약한 강의입니다."),
+	CLASS_CAPACITY_EXCEEDED(409, "RS002", "정원이 마감되어 예약할 수 없습니다.");
+
+	private final int status;
     private final String code;
     private final String message;
 }
