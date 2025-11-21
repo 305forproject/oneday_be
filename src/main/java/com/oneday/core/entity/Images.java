@@ -40,7 +40,7 @@ public class Images {
 	@JoinColumn(name = "class_id", nullable = false)
 	private Classes classes;
 
-	@Column(name = "image_url", length = 100, nullable = false)
+	@Column(name = "image_url", length = 500, nullable = false)
 	private String imageUrl;
 
     @Builder.Default

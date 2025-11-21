@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import com.oneday.core.dto.classes.ClassDetailResponseDto;
 import com.oneday.core.dto.classes.ClassMainResponseDto;
-import com.oneday.core.dto.classes.ImageDto;
 import com.oneday.core.dto.classes.RegisterClassRequest;
 import com.oneday.core.dto.classes.RegisterClassResponse;
 import com.oneday.core.dto.common.CoordinateDto;
@@ -24,7 +23,6 @@ import com.oneday.core.entity.User;
 import com.oneday.core.exception.classes.CategoryNotFoundException;
 import com.oneday.core.exception.classes.DuplicateClassTimeException;
 import com.oneday.core.exception.classes.InvalidClassTimeException;
-import com.oneday.core.exception.classes.InvalidImageException;
 import com.oneday.core.exception.CustomException;
 import com.oneday.core.exception.ErrorCode;
 import com.oneday.core.repository.CategoriesRepository;
@@ -200,10 +198,18 @@ public class ClassService {
 
 		// 7. 이미지 업로드 및 저장
 		List<String> imageUrls = imageService.uploadImages(imageFiles, savedClass.getClassId(), primaryImageIndex);
-		saveImages(savedClass, imageUrls, primaryImageIndex);
+		
+		try {
+			saveImages(savedClass, imageUrls, primaryImageIndex);
+			// 8. 시간 정보 저장 (일정별)
+			saveTimes(savedClass, request.schedules());
+		} catch (Exception e) {
+			log.error("클래스 등록 실패, 업로드된 파일 삭제: classId={}, error={}",
+					savedClass.getClassId(), e.getMessage());
+			imageService.deleteUploadedFiles(imageUrls);
+			throw e;
+		}
 
-		// 8. 시간 정보 저장 (일정별)
-		saveTimes(savedClass, request.schedules());
 
 		log.info("클래스 등록 완료: classId={}, className={}", savedClass.getClassId(), savedClass.getClassName());
 

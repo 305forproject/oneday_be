@@ -15,6 +15,10 @@ public class InvalidImageException extends CustomException {
         super(ErrorCode.INVALID_IMAGE, message);
     }
 
+    public InvalidImageException(String message, Throwable cause) {
+        super(ErrorCode.INVALID_IMAGE, message, cause);
+    }
+
     public InvalidImageException() {
         super(ErrorCode.INVALID_IMAGE, "유효하지 않은 이미지입니다");
     }
