@@ -131,7 +131,10 @@ class AuthControllerTest {
 
         LoginResponse response = new LoginResponse(
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh"
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh",
+            1L,
+            "test@example.com",
+            "홍길동"
         );
 
         given(authService.login(any(LoginRequest.class))).willReturn(response);
@@ -144,7 +147,10 @@ class AuthControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.data.accessToken").exists())
-            .andExpect(jsonPath("$.data.refreshToken").exists());
+            .andExpect(jsonPath("$.data.refreshToken").exists())
+            .andExpect(jsonPath("$.data.userId").value(1))
+            .andExpect(jsonPath("$.data.email").value("test@example.com"))
+            .andExpect(jsonPath("$.data.name").value("홍길동"));
     }
 
     @Test

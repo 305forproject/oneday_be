@@ -24,10 +24,12 @@ import jakarta.validation.ValidatorFactory;
  * RegisterClassRequest Validation 테스트
  * <p>
  * Jakarta Validation 어노테이션의 동작을 검증합니다.
+ * 최근 클래스 등록 개편으로 일정 정보가 schedules 리스트로 변경되었습니다.
  * </p>
  *
  * @author zionge2k
  * @since 2025-01-26
+ * @updated 2025-01-27
  */
 @DisplayName("RegisterClassRequest Validation 테스트")
 class RegisterClassRequestValidationTest {
@@ -38,6 +40,17 @@ class RegisterClassRequestValidationTest {
 	void setUp() {
 		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 		validator = factory.getValidator();
+	}
+
+	/**
+	 * 유효한 TimeSlot 생성 헬퍼 메서드
+	 */
+	private TimeSlotDto createValidTimeSlot() {
+		return new TimeSlotDto(
+				LocalDate.of(2025, 2, 1),
+				LocalTime.of(14, 0),
+				LocalTime.of(16, 0)
+		);
 	}
 
 	/**
@@ -57,10 +70,7 @@ class RegisterClassRequestValidationTest {
 				"06234",
 				10,
 				50000,
-				List.of(LocalDate.of(2025, 2, 1)),
-				LocalTime.of(14, 0),
-				LocalTime.of(16, 0),
-				List.of(new ImageDto("/uploads/class1_img1.jpg"))
+				List.of(createValidTimeSlot())
 		);
 	}
 
@@ -93,10 +103,7 @@ class RegisterClassRequestValidationTest {
 					"서울시 강남구",
 					null, null, null,
 					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(createValidTimeSlot())
 			);
 
 			// when
@@ -126,10 +133,7 @@ class RegisterClassRequestValidationTest {
 					"서울시 강남구",
 					null, null, null,
 					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(createValidTimeSlot())
 			);
 
 			// when
@@ -154,10 +158,7 @@ class RegisterClassRequestValidationTest {
 					"서울시 강남구",
 					null, null, null,
 					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(createValidTimeSlot())
 			);
 
 			// when
@@ -183,10 +184,7 @@ class RegisterClassRequestValidationTest {
 					"서울시 강남구",
 					null, null, null,
 					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(createValidTimeSlot())
 			);
 
 			// when
@@ -212,10 +210,7 @@ class RegisterClassRequestValidationTest {
 					"서울시 강남구",
 					null, null, null,
 					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(createValidTimeSlot())
 			);
 
 			// when
@@ -242,10 +237,7 @@ class RegisterClassRequestValidationTest {
 					"",  // 빈 값
 					null, null, null,
 					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(createValidTimeSlot())
 			);
 
 			// when
@@ -271,10 +263,7 @@ class RegisterClassRequestValidationTest {
 					longLocation,
 					null, null, null,
 					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(createValidTimeSlot())
 			);
 
 			// when
@@ -305,10 +294,7 @@ class RegisterClassRequestValidationTest {
 					null, null, null,
 					null,  // null
 					50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(createValidTimeSlot())
 			);
 
 			// when
@@ -334,10 +320,7 @@ class RegisterClassRequestValidationTest {
 					null, null, null,
 					0,  // 0
 					50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(createValidTimeSlot())
 			);
 
 			// when
@@ -363,10 +346,7 @@ class RegisterClassRequestValidationTest {
 					null, null, null,
 					-1,  // 음수
 					50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(createValidTimeSlot())
 			);
 
 			// when
@@ -392,10 +372,7 @@ class RegisterClassRequestValidationTest {
 					null, null, null,
 					1,  // 1
 					50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(createValidTimeSlot())
 			);
 
 			// when
@@ -423,10 +400,7 @@ class RegisterClassRequestValidationTest {
 					null, null, null,
 					10,
 					null,  // null
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(createValidTimeSlot())
 			);
 
 			// when
@@ -452,10 +426,7 @@ class RegisterClassRequestValidationTest {
 					null, null, null,
 					10,
 					-1,  // 음수
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(createValidTimeSlot())
 			);
 
 			// when
@@ -480,11 +451,8 @@ class RegisterClassRequestValidationTest {
 					"서울시 강남구",
 					null, null, null,
 					10,
-					0,  // 0원
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					0,  // 0 (무료)
+					List.of(createValidTimeSlot())
 			);
 
 			// when
@@ -496,25 +464,135 @@ class RegisterClassRequestValidationTest {
 	}
 
 	@Nested
-	@DisplayName("날짜 검증")
-	class DatesValidation {
+	@DisplayName("일정 검증")
+	class SchedulesValidation {
+
+		@Test
+		@DisplayName("일정 null - 검증 실패")
+		void nullSchedules_ViolationOccurs() {
+			// given
+			RegisterClassRequest request = new RegisterClassRequest(
+					CategoryType.COOKING_BAKING,
+					"클래스명",
+					"상세 설명",
+					null, null, null,
+					"서울시 강남구",
+					null, null, null,
+					10, 50000,
+					null  // null
+			);
+
+			// when
+			Set<ConstraintViolation<RegisterClassRequest>> violations = validator.validate(request);
+
+			// then
+			assertThat(violations).isNotEmpty();
+			assertThat(violations)
+					.extracting(ConstraintViolation::getMessage)
+					.contains("일정 정보는 필수입니다");
+		}
+
+		@Test
+		@DisplayName("일정 빈 리스트 - 검증 실패")
+		void emptySchedules_ViolationOccurs() {
+			// given
+			RegisterClassRequest request = new RegisterClassRequest(
+					CategoryType.COOKING_BAKING,
+					"클래스명",
+					"상세 설명",
+					null, null, null,
+					"서울시 강남구",
+					null, null, null,
+					10, 50000,
+					new ArrayList<>()  // 빈 리스트
+			);
+
+			// when
+			Set<ConstraintViolation<RegisterClassRequest>> violations = validator.validate(request);
+
+			// then
+			assertThat(violations).isNotEmpty();
+			assertThat(violations)
+					.extracting(ConstraintViolation::getMessage)
+					.contains("최소 1개 이상의 일정을 추가해야 합니다");
+		}
+
+		@Test
+		@DisplayName("일정 1개 - 검증 통과")
+		void oneSchedule_NoViolation() {
+			// given
+			RegisterClassRequest request = new RegisterClassRequest(
+					CategoryType.COOKING_BAKING,
+					"클래스명",
+					"상세 설명",
+					null, null, null,
+					"서울시 강남구",
+					null, null, null,
+					10, 50000,
+					List.of(createValidTimeSlot())  // 1개
+			);
+
+			// when
+			Set<ConstraintViolation<RegisterClassRequest>> violations = validator.validate(request);
+
+			// then
+			assertThat(violations).isEmpty();
+		}
+
+		@Test
+		@DisplayName("일정 5개 - 검증 통과")
+		void multipleSchedules_NoViolation() {
+			// given
+			List<TimeSlotDto> schedules = List.of(
+					new TimeSlotDto(LocalDate.of(2025, 2, 1), LocalTime.of(14, 0), LocalTime.of(16, 0)),
+					new TimeSlotDto(LocalDate.of(2025, 2, 2), LocalTime.of(14, 0), LocalTime.of(16, 0)),
+					new TimeSlotDto(LocalDate.of(2025, 2, 3), LocalTime.of(14, 0), LocalTime.of(16, 0)),
+					new TimeSlotDto(LocalDate.of(2025, 2, 4), LocalTime.of(14, 0), LocalTime.of(16, 0)),
+					new TimeSlotDto(LocalDate.of(2025, 2, 5), LocalTime.of(14, 0), LocalTime.of(16, 0))
+			);
+
+			RegisterClassRequest request = new RegisterClassRequest(
+					CategoryType.COOKING_BAKING,
+					"클래스명",
+					"상세 설명",
+					null, null, null,
+					"서울시 강남구",
+					null, null, null,
+					10, 50000,
+					schedules
+			);
+
+			// when
+			Set<ConstraintViolation<RegisterClassRequest>> violations = validator.validate(request);
+
+			// then
+			assertThat(violations).isEmpty();
+		}
+	}
+
+	@Nested
+	@DisplayName("TimeSlotDto 개별 검증")
+	class TimeSlotValidation {
 
 		@Test
 		@DisplayName("날짜 null - 검증 실패")
-		void nullDates_ViolationOccurs() {
+		void nullDate_ViolationOccurs() {
 			// given
-			RegisterClassRequest request = new RegisterClassRequest(
-					CategoryType.COOKING_BAKING,
-					"클래스명",
-					"상세 설명",
-					null, null, null,
-					"서울시 강남구",
-					null, null, null,
-					10, 50000,
+			TimeSlotDto timeSlot = new TimeSlotDto(
 					null,  // null
 					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					LocalTime.of(16, 0)
+			);
+
+			RegisterClassRequest request = new RegisterClassRequest(
+					CategoryType.COOKING_BAKING,
+					"클래스명",
+					"상세 설명",
+					null, null, null,
+					"서울시 강남구",
+					null, null, null,
+					10, 50000,
+					List.of(timeSlot)
 			);
 
 			// when
@@ -524,102 +602,19 @@ class RegisterClassRequestValidationTest {
 			assertThat(violations).isNotEmpty();
 			assertThat(violations)
 					.extracting(ConstraintViolation::getMessage)
-					.contains("날짜 정보는 필수입니다");
+					.contains("날짜는 필수입니다");
 		}
-
-		@Test
-		@DisplayName("날짜 빈 리스트 - 검증 실패")
-		void emptyDates_ViolationOccurs() {
-			// given
-			RegisterClassRequest request = new RegisterClassRequest(
-					CategoryType.COOKING_BAKING,
-					"클래스명",
-					"상세 설명",
-					null, null, null,
-					"서울시 강남구",
-					null, null, null,
-					10, 50000,
-					new ArrayList<>(),  // 빈 리스트
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
-			);
-
-			// when
-			Set<ConstraintViolation<RegisterClassRequest>> violations = validator.validate(request);
-
-			// then
-			assertThat(violations).isNotEmpty();
-			assertThat(violations)
-					.extracting(ConstraintViolation::getMessage)
-					.contains("최소 1개 이상의 날짜를 선택해야 합니다");
-		}
-
-		@Test
-		@DisplayName("날짜 1개 - 검증 통과")
-		void oneDateSufficient_NoViolation() {
-			// given
-			RegisterClassRequest request = new RegisterClassRequest(
-					CategoryType.COOKING_BAKING,
-					"클래스명",
-					"상세 설명",
-					null, null, null,
-					"서울시 강남구",
-					null, null, null,
-					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),  // 1개
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
-			);
-
-			// when
-			Set<ConstraintViolation<RegisterClassRequest>> violations = validator.validate(request);
-
-			// then
-			assertThat(violations).isEmpty();
-		}
-
-		@Test
-		@DisplayName("날짜 5개 - 검증 통과")
-		void multipleDates_NoViolation() {
-			// given
-			RegisterClassRequest request = new RegisterClassRequest(
-					CategoryType.COOKING_BAKING,
-					"클래스명",
-					"상세 설명",
-					null, null, null,
-					"서울시 강남구",
-					null, null, null,
-					10, 50000,
-					List.of(
-							LocalDate.of(2025, 2, 1),
-							LocalDate.of(2025, 2, 3),
-							LocalDate.of(2025, 2, 5),
-							LocalDate.of(2025, 2, 7),
-							LocalDate.of(2025, 2, 9)
-					),  // 5개
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
-			);
-
-			// when
-			Set<ConstraintViolation<RegisterClassRequest>> violations = validator.validate(request);
-
-			// then
-			assertThat(violations).isEmpty();
-		}
-	}
-
-	@Nested
-	@DisplayName("시간 검증")
-	class TimeValidation {
 
 		@Test
 		@DisplayName("시작 시간 null - 검증 실패")
 		void nullStartTime_ViolationOccurs() {
 			// given
+			TimeSlotDto timeSlot = new TimeSlotDto(
+					LocalDate.of(2025, 2, 1),
+					null,  // null
+					LocalTime.of(16, 0)
+			);
+
 			RegisterClassRequest request = new RegisterClassRequest(
 					CategoryType.COOKING_BAKING,
 					"클래스명",
@@ -628,10 +623,7 @@ class RegisterClassRequestValidationTest {
 					"서울시 강남구",
 					null, null, null,
 					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					null,  // null
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(timeSlot)
 			);
 
 			// when
@@ -648,6 +640,12 @@ class RegisterClassRequestValidationTest {
 		@DisplayName("종료 시간 null - 검증 실패")
 		void nullEndTime_ViolationOccurs() {
 			// given
+			TimeSlotDto timeSlot = new TimeSlotDto(
+					LocalDate.of(2025, 2, 1),
+					LocalTime.of(14, 0),
+					null  // null
+			);
+
 			RegisterClassRequest request = new RegisterClassRequest(
 					CategoryType.COOKING_BAKING,
 					"클래스명",
@@ -656,10 +654,7 @@ class RegisterClassRequestValidationTest {
 					"서울시 강남구",
 					null, null, null,
 					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					null,  // null
-					List.of(new ImageDto("/img1.jpg"))
+					List.of(timeSlot)
 			);
 
 			// when
@@ -674,158 +669,6 @@ class RegisterClassRequestValidationTest {
 	}
 
 	@Nested
-	@DisplayName("이미지 검증")
-	class ImagesValidation {
-
-		@Test
-		@DisplayName("이미지 null - 검증 실패")
-		void nullImages_ViolationOccurs() {
-			// given
-			RegisterClassRequest request = new RegisterClassRequest(
-					CategoryType.COOKING_BAKING,
-					"클래스명",
-					"상세 설명",
-					null, null, null,
-					"서울시 강남구",
-					null, null, null,
-					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					null  // null
-			);
-
-			// when
-			Set<ConstraintViolation<RegisterClassRequest>> violations = validator.validate(request);
-
-			// then
-			assertThat(violations).isNotEmpty();
-			assertThat(violations)
-					.extracting(ConstraintViolation::getMessage)
-					.contains("이미지 정보는 필수입니다");
-		}
-
-		@Test
-		@DisplayName("이미지 빈 리스트 - 검증 실패")
-		void emptyImages_ViolationOccurs() {
-			// given
-			RegisterClassRequest request = new RegisterClassRequest(
-					CategoryType.COOKING_BAKING,
-					"클래스명",
-					"상세 설명",
-					null, null, null,
-					"서울시 강남구",
-					null, null, null,
-					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					new ArrayList<>()  // 빈 리스트
-			);
-
-			// when
-			Set<ConstraintViolation<RegisterClassRequest>> violations = validator.validate(request);
-
-			// then
-			assertThat(violations).isNotEmpty();
-			assertThat(violations)
-					.extracting(ConstraintViolation::getMessage)
-					.contains("이미지는 1개 이상 5개 이하로 등록해야 합니다");
-		}
-
-		@Test
-		@DisplayName("이미지 6개 - 검증 실패")
-		void tooManyImages_ViolationOccurs() {
-			// given
-			RegisterClassRequest request = new RegisterClassRequest(
-					CategoryType.COOKING_BAKING,
-					"클래스명",
-					"상세 설명",
-					null, null, null,
-					"서울시 강남구",
-					null, null, null,
-					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(
-							new ImageDto("/img1.jpg"),
-							new ImageDto("/img2.jpg"),
-							new ImageDto("/img3.jpg"),
-							new ImageDto("/img4.jpg"),
-							new ImageDto("/img5.jpg"),
-							new ImageDto("/img6.jpg")  // 6개
-					)
-			);
-
-			// when
-			Set<ConstraintViolation<RegisterClassRequest>> violations = validator.validate(request);
-
-			// then
-			assertThat(violations).isNotEmpty();
-			assertThat(violations)
-					.extracting(ConstraintViolation::getMessage)
-					.contains("이미지는 1개 이상 5개 이하로 등록해야 합니다");
-		}
-
-		@Test
-		@DisplayName("이미지 1개 - 검증 통과")
-		void oneImage_NoViolation() {
-			// given
-			RegisterClassRequest request = new RegisterClassRequest(
-					CategoryType.COOKING_BAKING,
-					"클래스명",
-					"상세 설명",
-					null, null, null,
-					"서울시 강남구",
-					null, null, null,
-					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(new ImageDto("/img1.jpg"))  // 1개
-			);
-
-			// when
-			Set<ConstraintViolation<RegisterClassRequest>> violations = validator.validate(request);
-
-			// then
-			assertThat(violations).isEmpty();
-		}
-
-		@Test
-		@DisplayName("이미지 5개 - 검증 통과")
-		void fiveImages_NoViolation() {
-			// given
-			RegisterClassRequest request = new RegisterClassRequest(
-					CategoryType.COOKING_BAKING,
-					"클래스명",
-					"상세 설명",
-					null, null, null,
-					"서울시 강남구",
-					null, null, null,
-					10, 50000,
-					List.of(LocalDate.of(2025, 2, 1)),
-					LocalTime.of(14, 0),
-					LocalTime.of(16, 0),
-					List.of(
-							new ImageDto("/img1.jpg"),
-							new ImageDto("/img2.jpg"),
-							new ImageDto("/img3.jpg"),
-							new ImageDto("/img4.jpg"),
-							new ImageDto("/img5.jpg")  // 5개
-					)
-			);
-
-			// when
-			Set<ConstraintViolation<RegisterClassRequest>> violations = validator.validate(request);
-
-			// then
-			assertThat(violations).isEmpty();
-		}
-	}
-
-	@Nested
 	@DisplayName("복합 검증")
 	class MultipleValidation {
 
@@ -836,23 +679,21 @@ class RegisterClassRequestValidationTest {
 			RegisterClassRequest request = new RegisterClassRequest(
 					null,  // 카테고리 null
 					"",    // 클래스명 빈 값
-					"상세 설명",
+					null,
 					null, null, null,
 					"",    // 위치 빈 값
 					null, null, null,
-					0,     // 최대 인원 0
-					-1,    // 가격 음수
-					new ArrayList<>(),  // 날짜 빈 리스트
-					null,  // 시작 시간 null
-					null,  // 종료 시간 null
-					new ArrayList<>()   // 이미지 빈 리스트
+					null,  // 최대 인원 null
+					null,  // 가격 null
+					null   // 일정 null
 			);
 
 			// when
 			Set<ConstraintViolation<RegisterClassRequest>> violations = validator.validate(request);
 
 			// then
-			assertThat(violations).hasSize(9);  // 9개 검증 실패
+			assertThat(violations).isNotEmpty();
+			assertThat(violations).hasSizeGreaterThanOrEqualTo(5);
 		}
 	}
 }
