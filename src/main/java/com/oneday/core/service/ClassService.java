@@ -200,7 +200,14 @@ public class ClassService {
 
 		// 7. 이미지 업로드 및 저장
 		List<String> imageUrls = imageService.uploadImages(imageFiles, savedClass.getClassId(), primaryImageIndex);
-		saveImages(savedClass, imageUrls, primaryImageIndex);
+		
+		try {
+			saveImages(savedClass, imageUrls, primaryImageIndex);
+		} catch (Exception e) {
+			log.error("이미지 DB 저장 실패, S3에서 삭제 처리: classId={}", savedClass.getClassId(), e);
+			imageService.deleteUploadedFiles(imageUrls);
+			throw e;
+		}
 
 		// 8. 시간 정보 저장 (일정별)
 		saveTimes(savedClass, request.schedules());
