@@ -66,16 +66,21 @@ public class SecurityConfig {
 
             // 요청 권한 설정
             .authorizeHttpRequests(auth -> auth
+                // 인증 불필요 - 인증 관련 API
                 .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout")
-                .permitAll()  // 회원가입, 로그인, 토큰 갱신, 로그아웃은 인증 불필요
+                .permitAll()
+                // 인증 불필요 - 클래스 검색 및 조회
                 .requestMatchers("/api/classes", "/api/classes/**")
-                .permitAll()  // 클래스 조회는 인증 불필요
+                .permitAll()
+                // 인증 불필요 - 카테고리 조회
                 .requestMatchers("/api/categories", "/api/categories/**")
-                .permitAll()  // 카테고리 조회는 인증 불필요
+                .permitAll()
+                // 인증 필요 - 사용자 정보 조회
                 .requestMatchers("/api/auth/me")
                 .authenticated()
+                // 그 외 모든 요청은 인증 필요
                 .anyRequest()
-                .authenticated()  // 그 외 요청은 인증 필요
+                .authenticated()
             )
 
             // JWT 인증 필터 추가
@@ -98,14 +103,14 @@ public class SecurityConfig {
 
     /**
      * CORS 설정
-     * 프론트엔드(localhost:5173)에서의 요청을 허용
+     * 프론트엔드(5173 포트)에서의 요청을 허용
      *
      * @return CorsConfigurationSource
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));  // 프론트엔드 포트
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
