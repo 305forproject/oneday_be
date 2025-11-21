@@ -1,6 +1,9 @@
 version: '3.8'
 
 services:
+  # -------------------------------------------------------
+  # 1. MySQL 설정
+  # -------------------------------------------------------
   mysql:
     image: mysql:8.0
     container_name: oneday-mysql
@@ -17,6 +20,57 @@ services:
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
+    networks:
+      - oneday-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------------
+  # 2. 백엔드 (Spring Boot)
+  # -------------------------------------------------------
+  backend:
+    build: ./oneday_be
+    container_name: backend
+    ports:
+      - "8081:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    # .env 파일의 AWS 키를 자동으로 가져옴
+    env_file:
+      - .env
+
+    volumes:
+      # [삭제] 이제 로컬에 저장 안 하니까 아래 줄은 지우세요!
+      # - ./oneday_fe/uploads/images:/app/uploads  <-- 삭제
+
+      # 시간 동기화만 남겨둠
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    networks:
+      - oneday-network
+
+  # -------------------------------------------------------
+  # 3. 프론트엔드 (React + Nginx)
+  # -------------------------------------------------------
+  frontend:
+    # 본인 경로로 수정
+    build:
+      context: ./oneday_fe # (경로 주의: 프론트엔드 폴더명)
+      args:
+        # .env 파일에 있는 값을 가져와서 넘깁니다.
+        VITE_TOSS_CLIENT_KEY: ${VITE_TOSS_CLIENT_KEY}
+        VITE_KAKAO_JAVASCRIPT_KEY: ${VITE_KAKAO_JAVASCRIPT_KEY}
+        VITE_GG_API_KEY: ${VITE_GG_API_KEY}
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
     networks:
       - oneday-network
 
