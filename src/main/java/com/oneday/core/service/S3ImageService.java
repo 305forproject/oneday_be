@@ -1,10 +1,10 @@
 package com.oneday.core.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.oneday.core.exception.classes.InvalidImageException;
+import com.oneday.core.util.ImageValidator;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -29,19 +29,32 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class S3ImageService {
 
 	private final S3Client s3Client;
+	private final ImageValidator imageValidator;
+	private final String bucketName;
+	private final String region;
 
-	@Value("${aws.s3.bucket}")
-	private String bucketName;
+	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
-	@Value("${aws.s3.region}")
-	private String region;
-
-	private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png", "gif", "webp");
-	private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+	/**
+	 * 생성자 주입
+	 *
+	 * @param s3Client S3 클라이언트
+	 * @param imageValidator 이미지 검증기
+	 * @param bucketName S3 버킷 이름
+	 * @param region S3 리전
+	 */
+	public S3ImageService(S3Client s3Client,
+						  ImageValidator imageValidator,
+						  @Value("${aws.s3.bucket}") String bucketName,
+						  @Value("${aws.s3.region}") String region) {
+		this.s3Client = s3Client;
+		this.imageValidator = imageValidator;
+		this.bucketName = bucketName;
+		this.region = region;
+	}
 
 	/**
 	 * 이미지 파일 S3 업로드
@@ -52,19 +65,28 @@ public class S3ImageService {
 	 * @return 저장된 이미지 URL 목록
 	 */
 	public List<String> uploadImages(MultipartFile[] files, Integer classId, int primaryIndex) {
-		validateImageCount(files);
+		imageValidator.validateImageCount(files);
 
 		List<String> imageUrls = new ArrayList<>();
 
-		for (int i = 0; i < files.length; i++) {
-			MultipartFile file = files[i];
-			validateImageFile(file);
+		try {
+			for (int i = 0; i < files.length; i++) {
+				MultipartFile file = files[i];
+				imageValidator.validateImageFile(file);
 
-			String s3Key = generateS3Key(classId, file.getOriginalFilename());
-			String imageUrl = uploadToS3(file, s3Key);
+				String s3Key = generateS3Key(classId, file.getOriginalFilename());
+				String imageUrl = uploadToS3(file, s3Key);
 
-			imageUrls.add(imageUrl);
-			log.info("S3 이미지 업로드 완료: {}, isPrimary={}", imageUrl, i == primaryIndex);
+				imageUrls.add(imageUrl);
+				log.info("S3 이미지 업로드 완료: {}, isPrimary={}", imageUrl, i == primaryIndex);
+			}
+		} catch (Exception e) {
+			// 업로드된 파일들 삭제 (롤백)
+			if (!imageUrls.isEmpty()) {
+				log.warn("S3 업로드 실패로 인한 롤백 처리: {}개 파일 삭제", imageUrls.size());
+				deleteUploadedFiles(imageUrls);
+			}
+			throw e;
 		}
 
 		return imageUrls;
@@ -74,7 +96,7 @@ public class S3ImageService {
 	 * S3에 파일 업로드
 	 */
 	private String uploadToS3(MultipartFile file, String s3Key) {
-		try {
+		try (InputStream inputStream = file.getInputStream()) {
 			PutObjectRequest putObjectRequest = PutObjectRequest.builder()
 				.bucket(bucketName)
 				.key(s3Key)
@@ -82,20 +104,28 @@ public class S3ImageService {
 				.contentLength(file.getSize())
 				.build();
 
-			s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+			s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, file.getSize()));
 
 			return buildS3Url(s3Key);
 		} catch (IOException e) {
-			throw new InvalidImageException("S3 업로드 중 오류가 발생했습니다: " + file.getOriginalFilename());
+			throw new InvalidImageException("S3 업로드 중 오류가 발생했습니다: " + file.getOriginalFilename(), e);
 		}
+	}
+
+	/**
+	 * 날짜 기반 경로 생성 (yyyy/MM/dd)
+	 *
+	 * @return 날짜 경로 문자열
+	 */
+	private String getDatePath() {
+		return LocalDate.now().format(DATE_FORMATTER);
 	}
 
 	/**
 	 * S3 Key 생성 (images/2025/01/27/class-123/uuid-timestamp.jpg)
 	 */
 	private String generateS3Key(Integer classId, String originalFilename) {
-		LocalDate now = LocalDate.now();
-		String datePath = now.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+		String datePath = getDatePath();
 		String fileName = generateFileName(originalFilename);
 		return String.format("images/%s/class-%d/%s", datePath, classId, fileName);
 	}
@@ -104,7 +134,7 @@ public class S3ImageService {
 	 * 고유한 파일명 생성
 	 */
 	private String generateFileName(String originalFilename) {
-		String extension = getFileExtension(originalFilename);
+		String extension = imageValidator.getFileExtension(originalFilename);
 		String uuid = UUID.randomUUID().toString().substring(0, 8);
 		String timestamp = String.valueOf(System.currentTimeMillis());
 		return uuid + "-" + timestamp + "." + extension;
@@ -117,42 +147,6 @@ public class S3ImageService {
 		return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, s3Key);
 	}
 
-	/**
-	 * 이미지 개수 검증
-	 */
-	private void validateImageCount(MultipartFile[] files) {
-		if (files == null || files.length < 1 || files.length > 8) {
-			throw new InvalidImageException("이미지는 1개 이상 8개 이하로 등록해야 합니다");
-		}
-	}
-
-	/**
-	 * 이미지 파일 검증
-	 */
-	private void validateImageFile(MultipartFile file) {
-		if (file.isEmpty()) {
-			throw new InvalidImageException("빈 파일은 업로드할 수 없습니다");
-		}
-
-		if (file.getSize() > MAX_FILE_SIZE) {
-			throw new InvalidImageException("파일 크기는 5MB를 초과할 수 없습니다: " + file.getOriginalFilename());
-		}
-
-		String extension = getFileExtension(file.getOriginalFilename());
-		if (!ALLOWED_EXTENSIONS.contains(extension.toLowerCase())) {
-			throw new InvalidImageException("지원하지 않는 파일 형식입니다: " + extension);
-		}
-	}
-
-	/**
-	 * 파일 확장자 추출
-	 */
-	private String getFileExtension(String filename) {
-		if (filename == null || !filename.contains(".")) {
-			throw new InvalidImageException("유효하지 않은 파일명입니다");
-		}
-		return filename.substring(filename.lastIndexOf('.') + 1);
-	}
 
 	/**
 	 * S3에서 파일 삭제

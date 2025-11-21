@@ -6,7 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import lombok.RequiredArgsConstructor;
+import com.oneday.core.enums.StorageType;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -27,14 +28,26 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ImageService {
 
 	private final S3ImageService s3ImageService;
 	private final LocalImageService localImageService;
+	private final StorageType storageType;
 
-	@Value("${file.upload.storage-type}")
-	private String storageType;
+	/**
+	 * 생성자 주입
+	 *
+	 * @param s3ImageService S3 이미지 서비스
+	 * @param localImageService 로컬 이미지 서비스
+	 * @param storageType 저장소 타입 설정값
+	 */
+	public ImageService(S3ImageService s3ImageService,
+						LocalImageService localImageService,
+						@Value("${file.upload.storage-type}") String storageType) {
+		this.s3ImageService = s3ImageService;
+		this.localImageService = localImageService;
+		this.storageType = StorageType.from(storageType);
+	}
 
 	/**
 	 * 이미지 파일 업로드 및 저장
@@ -48,14 +61,10 @@ public class ImageService {
 	public List<String> uploadImages(MultipartFile[] files, Integer classId, int primaryIndex) {
 		log.info("이미지 업로드 시작: storage-type={}, classId={}, fileCount={}", storageType, classId, files.length);
 
-		if ("s3".equalsIgnoreCase(storageType)) {
-			return s3ImageService.uploadImages(files, classId, primaryIndex);
-		} else if ("local".equalsIgnoreCase(storageType)) {
-			return localImageService.uploadImages(files, classId, primaryIndex);
-		} else {
-			throw new UnsupportedOperationException(
-				"지원하지 않는 storage-type입니다: " + storageType + ". 's3' 또는 'local'을 사용하세요.");
-		}
+		return switch (storageType) {
+			case S3 -> s3ImageService.uploadImages(files, classId, primaryIndex);
+			case LOCAL -> localImageService.uploadImages(files, classId, primaryIndex);
+		};
 	}
 
 	/**
@@ -67,13 +76,9 @@ public class ImageService {
 	public void deleteUploadedFiles(List<String> imageUrls) {
 		log.info("이미지 삭제 시작: storage-type={}, urlCount={}", storageType, imageUrls.size());
 
-		if ("s3".equalsIgnoreCase(storageType)) {
-			s3ImageService.deleteUploadedFiles(imageUrls);
-		} else if ("local".equalsIgnoreCase(storageType)) {
-			localImageService.deleteUploadedFiles(imageUrls);
-		} else {
-			throw new UnsupportedOperationException(
-				"지원하지 않는 storage-type입니다: " + storageType + ". 's3' 또는 'local'을 사용하세요.");
+		switch (storageType) {
+			case S3 -> s3ImageService.deleteUploadedFiles(imageUrls);
+			case LOCAL -> localImageService.deleteUploadedFiles(imageUrls);
 		}
 	}
 }
