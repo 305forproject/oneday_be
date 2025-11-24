@@ -45,9 +45,6 @@ services:
       - .env
 
     volumes:
-      # [삭제] 이제 로컬에 저장 안 하니까 아래 줄은 지우세요!
-      # - ./oneday_fe/uploads/images:/app/uploads  <-- 삭제
-
       # 시간 동기화만 남겨둠
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
